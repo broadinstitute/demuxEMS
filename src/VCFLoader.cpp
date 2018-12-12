@@ -20,6 +20,7 @@
 
 #include <cstdio>
 #include <cassert>
+#include <cstdlib>
 #include <cstdint>
 #include <string>
 #include <fstream>
@@ -33,6 +34,8 @@
 
 
 const int SNPType::SHIFT2[16] = {0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30};
+
+int SNPType::nDonor;
 
 int SNPType::getDonorGenotype(int donor) const {
 	assert(nDonor > donor && genotypes != nullptr);
@@ -71,13 +74,20 @@ void VCFLoader::loadVCF(std::string input_vcf_file) {
 
 	if (is_gzip) {
 		fin.open(input_vcf_file, std::ios_base::in | std::ios_base::binary);
-		gin.push(boost::iostreams::gzip_decompressor());
+		printf("a\n");
+		boost::iostreams::gzip_decompressor();
+		// gin.push(boost::iostreams::gzip_decompressor());
+		printf("b\n");
 		gin.push(fin);
+		printf("c\n");
 	} 
 	else {
 		fin.open(input_vcf_file);
 		gin.push(fin);
 	}
+
+	printf("%d\n", std::getline(gin, line).good());
+	exit(-1);
 
 	while (std::getline(gin, line).good() && line[0] == '#' && line[1] == '#');
 
@@ -95,6 +105,10 @@ void VCFLoader::loadVCF(std::string input_vcf_file) {
 			donor_names.push_back(field);
 		}
 	}
+
+	for (std::string name : donor_names) printf("%s\t", name.c_str());
+	printf("\n");
+	exit(-1);
 
 	nDonor = donor_names.size();
 	SNPType::setNumDonor(nDonor);

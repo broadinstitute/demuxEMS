@@ -22,6 +22,7 @@
 #define VCFLOADER
 
 #include <cstdint>
+#include <cassert>
 #include <string>
 #include <vector>
 #include <unordered_map>
@@ -31,8 +32,33 @@ public:
 	SNPType(int pos, char ref, char alt) : pos(pos), ref(ref), alt(alt), genotypes(nullptr) {
 	}
 
-	~SNPType() {
+	SNPType(SNPType&& o) noexcept {
+		if (this != &o) moveFrom(std::move(o));
+	}
+
+	SNPType(const SNPType& o) { // if noexcept copy constructor + noexcept destructor, will use move semantics , but still need copy constructors...
+		assert(false);
+	}
+
+	SNPType& operator=(SNPType&& o) noexcept {
+		if (this != &o) moveFrom(std::move(o));
+		return *this;
+	}
+
+	SNPType& operator=(const SNPType& o) {
+		assert(false);
+	}
+
+	~SNPType() noexcept {
 		if (genotypes != nullptr) delete[] genotypes;
+	}
+
+	void moveFrom(SNPType&& o) {
+		pos = o.pos;
+		ref = o.ref;
+		alt = o.alt;
+		genotypes = o.genotypes;
+		o.genotypes = nullptr;
 	}
 
 	int getPos() const { return pos; }
@@ -69,6 +95,9 @@ public:
 	VCFLoader() {}
 
 	void loadVCF(std::string input_vcf_file);
+
+	SNPMapType& getMap() { return snpMap; }
+
 private:
 	std::vector<std::string> donor_names;
 	SNPMapType snpMap;

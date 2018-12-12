@@ -74,22 +74,15 @@ void VCFLoader::loadVCF(std::string input_vcf_file) {
 
 	if (is_gzip) {
 		fin.open(input_vcf_file, std::ios_base::in | std::ios_base::binary);
-		printf("a\n");
-		boost::iostreams::gzip_decompressor();
-		// gin.push(boost::iostreams::gzip_decompressor());
-		printf("b\n");
+		gin.push(boost::iostreams::gzip_decompressor());
 		gin.push(fin);
-		printf("c\n");
 	} 
 	else {
 		fin.open(input_vcf_file);
 		gin.push(fin);
 	}
 
-	printf("%d\n", std::getline(gin, line).good());
-	exit(-1);
-
-	while (std::getline(gin, line).good() && line[0] == '#' && line[1] == '#');
+	while (std::getline(gin, line) && line[0] == '#' && line[1] == '#');
 
 	assert(line[0] == '#');
 	strin.clear();
@@ -97,18 +90,14 @@ void VCFLoader::loadVCF(std::string input_vcf_file) {
 
 	std::string fixed[] = {"CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO"};
 	for (int i = 0; i < 8; ++i)
-		assert(std::getline(strin, field, '\t').good() && field == fixed[i]);
-	if (std::getline(strin, field, '\t').good()) {
+		assert(std::getline(strin, field, '\t') && field == fixed[i]);
+	if (std::getline(strin, field, '\t')) {
 		assert(field == "FORMAT");
 		donor_names.clear();
-		while (std::getline(strin, field, '\t').good()) {
+		while (std::getline(strin, field, '\t')) {
 			donor_names.push_back(field);
 		}
 	}
-
-	for (std::string name : donor_names) printf("%s\t", name.c_str());
-	printf("\n");
-	exit(-1);
 
 	nDonor = donor_names.size();
 	SNPType::setNumDonor(nDonor);
@@ -121,32 +110,32 @@ void VCFLoader::loadVCF(std::string input_vcf_file) {
 
 	new_vec.clear();
 	int cnt = 0, nsnp = 0;
-	while (std::getline(gin, line).good()) {
+	while (std::getline(gin, line)) {
 		++cnt;
 
 		strin.clear();
 		strin.str(line);
-		assert(std::getline(strin, chrom, '\t').good()); // CHROM
+		assert(std::getline(strin, chrom, '\t')); // CHROM
 
-		assert(std::getline(strin, field, '\t').good()); // POS
+		assert(std::getline(strin, field, '\t')); // POS
 		pos = std::stoi(field);
 
-		assert(std::getline(strin, field, '\t').good()); // ID
+		assert(std::getline(strin, field, '\t')); // ID
 
-		assert(std::getline(strin, field, '\t').good()); // REF
+		assert(std::getline(strin, field, '\t')); // REF
 		if (field.length() != 1 || !(field[0] == 'A' || field[0] == 'C' || field[0] == 'G' || field[0] == 'T')) continue;
 		ref = field[0];
 
-		assert(std::getline(strin, field, '\t').good()); // ALT
+		assert(std::getline(strin, field, '\t')); // ALT
 		if (field.length() != 1 || !(field[0] == 'A' || field[0] == 'C' || field[0] == 'G' || field[0] == 'T')) continue;
 		alt = field[0];
 
-		assert(std::getline(strin, field, '\t').good()); // QUAL
+		assert(std::getline(strin, field, '\t')); // QUAL
 		
-		assert(std::getline(strin, field, '\t').good()); // FILTER
+		assert(std::getline(strin, field, '\t')); // FILTER
 		if (field != "PASS") continue;
 
-		assert(std::getline(strin, field, '\t').good()); // INFO
+		assert(std::getline(strin, field, '\t')); // INFO
 
 		if (chrom != curr_chrom) {
 			auto iter = snpMap.find(chrom);
@@ -161,18 +150,17 @@ void VCFLoader::loadVCF(std::string input_vcf_file) {
 		++nsnp;
 
 		if (nDonor > 0) {
-			assert(std::getline(strin, field, '\t').good() && field.substr(0, 2) == "GT"); // FORMAT
+			assert(std::getline(strin, field, '\t') && field.substr(0, 2) == "GT"); // FORMAT
 			for (int i = 0; i < nDonor; ++i) {
-				assert(std::getline(strin, field, '\t').good()); // Donor
+				assert(std::getline(strin, field, '\t')); // Donor
 				snp_vec->back().setDonorGenotype(i, field.substr(0, field.find_first_of(':')));
 			}
 		}
-
+				
 		if (cnt % 1000000 == 0) printf("Processed %d lines, loaded %d SNPs.\n", cnt, nsnp);
 	}
 
 	printf("Loaded %d SNPs in total.\n", nsnp);
-
 
 	fin.close();
 	if (is_gzip) gin.reset();

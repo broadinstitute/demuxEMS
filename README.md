@@ -1,8 +1,8 @@
-# PROBer
+# demuxEMS
 
-A general toolkit for analyzing sequencing-based 'toeprinting' assays
+Demultiplexing and ambient RNA estimation based on SNPs.
 
-Bo Li, Akshay Tambe, Sharon Aviran and Lior Pachter.
+Bo Li.
 
 * * *
 

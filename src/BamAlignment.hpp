@@ -1,4 +1,4 @@
-/* Copyright (c) 2017
+/* Copyright (c) 2018
    Bo Li (The Broad Institute of MIT and Harvard)
    libo@broadinstitute.org
 
@@ -26,6 +26,7 @@
 #include <cstdint>
 #include <cstring>
 #include <string>
+#include <vector>
 #include <algorithm>
 
 #include "htslib/sam.h"
@@ -334,6 +335,7 @@ public:
 
 private:
 	static const uint8_t rnt_table[16];
+	static const std::vector<char> base2rbase;
 
 	bool is_paired;
 	char is_aligned; // 2 bits, from right to left, the first bit represents first mate and the second bit represents the second mate

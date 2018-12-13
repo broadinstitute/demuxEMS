@@ -9,7 +9,7 @@ find_path(HTSLIB_INCLUDE_DIR
 )
 
 find_library(HTSLIB_LIBRARY
-	NAMES libhts.a
+	NAMES libhts.so libhts.dylib libhts.a
 	PATHS ${_HTSLIB_SEARCHES}
 	HINTS ENV HTSLIB_ROOT)
 
@@ -17,22 +17,39 @@ include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(HTSLIB REQUIRED_VARS HTSLIB_LIBRARY HTSLIB_INCLUDE_DIR)
 
 if(HTSLIB_FOUND)
-	find_path(ZLIB_INCLUDE_DIR
-		NAMES zlib.h
+	get_filename_component(HTSLIB_LIBRARY_DIR ${HTSLIB_LIBRARY} DIRECTORY)
+
+
+	find_path(LIBDEFLATE_INCLUDE_DIR
+		NAMES libdeflate.h
 		HINTS ${HTSLIB_INCLUDE_DIR}
 	)
 
-	get_filename_component(HTSLIB_LIBRARY_DIR ${HTSLIB_LIBRARY} DIRECTORY)
-
-	find_library(ZLIB_LIBRARY
-		NAMES libz.a
+	find_library(LIBDEFLATE_LIBRARY
+		NAMES libdeflate.so libdeflate.dylib libdeflate.a
 		HINTS ${HTSLIB_LIBRARY_DIR}
 	)
 	
-	if (NOT ZLIB_INCLUDE_DIR OR NOT ZLIB_LIBRARY)
-		message(FATAL_ERROR "zlib not found. Required for the htslib.")
+	if (NOT LIBDEFLATE_INCLUDE_DIR OR NOT LIBDEFLATE_LIBRARY)
+		message(FATAL_ERROR "libdeflate not found. Required for the htslib.")
 	endif()
 
-	set(HTSLIB_INCLUDE_DIRS ${ZLIB_INCLUDE_DIR} ${HTSLIB_INCLUDE_DIR})
-	set(HTSLIB_LIBRARIES ${ZLIB_LIBRARY} ${HTSLIB_LIBRARY})
+
+	find_path(LIBLZMA_INCLUDE_DIR
+		NAMES lzma.h
+		HINTS ${HTSLIB_INCLUDE_DIR}
+	)
+
+	find_library(LIBLZMA_LIBRARY
+		NAMES liblzma.so liblzma.dylib liblzma.a
+		HINTS ${HTSLIB_LIBRARY_DIR}
+	)
+	
+	if (NOT LIBLZMA_INCLUDE_DIR OR NOT LIBLZMA_LIBRARY)
+		message(FATAL_ERROR "liblzma not found. Required for the htslib.")
+	endif()
+
+
+	set(HTSLIB_INCLUDE_DIRS ${LIBDEFLATE_INCLUDE_DIR} ${LIBLZMA_INCLUDE_DIR} ${HTSLIB_INCLUDE_DIR})
+	set(HTSLIB_LIBRARIES ${LIBDEFLATE_LIBRARY} ${LIBLZMA_LIBRARY} ${HTSLIB_LIBRARY})
 endif()

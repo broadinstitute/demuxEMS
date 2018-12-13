@@ -1,11 +1,9 @@
-# include_directories(${ZLIB_INCLUDE_DIRS})
 include_directories(${Boost_INCLUDE_DIRS})
-# include_directories(../ext)
-# include_directories(BEFORE ${HTSLIB_DIR})
+include_directories(${HTSLIB_INCLUDE_DIRS})
 
 file(GLOB sources *.cpp)
 file(GLOB headers *.hpp)
-list(REMOVE_ITEM sources test.cpp)
+list(REMOVE_ITEM sources scan_snp.cpp)
 # list(REMOVE_ITEM sources buildRef.cpp parseAlignments.cpp EM.cpp simulation.cpp analyze_iCLIP.cpp sampleMultiReads_iCLIP.cpp Gibbs.cpp bootstrap.cpp)
 # list(REMOVE_ITEM sources PROBer_single_transcript_batch.cpp)
 
@@ -26,8 +24,8 @@ add_library(demuxEMS_core ${sources} ${headers})
 # add_executable(PROBer-run-gibbs Gibbs.cpp)
 # add_executable(PROBer-bootstrap bootstrap.cpp)
 
-add_executable(testt test.cpp)
-target_link_libraries(testt demuxEMS_core ${Boost_IOSTREAMS_LIBRARY})
+add_executable(scan_snp scan_snp.cpp)
+target_link_libraries(scan_snp demuxEMS_core ${Boost_IOSTREAMS_LIBRARY} ${HTSLIB_LIBRARIES})
 
 # target_link_libraries(PROBer-build-reference PROBer_core)
 # target_link_libraries(PROBer-parse-alignments PROBer_core ${HTSLIB_DIR}/libhts.a ${ZLIB_LIBRARIES} pthread)

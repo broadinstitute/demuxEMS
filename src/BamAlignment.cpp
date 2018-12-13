@@ -1,4 +1,4 @@
-/* Copyright (c) 2017
+/* Copyright (c) 2018
    Bo Li (The Broad Institute of MIT and Harvard)
    libo@broadinstitute.org
 
@@ -30,13 +30,29 @@
 #include "htslib/hts.h"
 #include "htslib/sam.h"
 
-#include "utils.h"
 #include "my_assert.h"
 #include "SamParser.hpp"
 #include "BamWriter.hpp"
 #include "BamAlignment.hpp"
 
+
+
 const uint8_t BamAlignment::rnt_table[16] = {0, 8, 4, 0, 2, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 15};
+
+std::vector<char> init_base2rbase() {
+	std::vector<char> vec(128, -1);
+	vec['a'] = 't'; vec['A'] = 'T';
+	vec['c'] = 'g'; vec['C'] = 'G';
+	vec['g'] = 'c'; vec['G'] = 'C';
+	vec['t'] = 'a'; vec['T'] = 'A';
+	vec['n'] = 'n'; vec['N'] = 'N';
+
+	return vec;
+}
+
+const std::vector<char> BamAlignment::base2rbase = init_base2rbase();
+
+
 
 bool BamAlignment::read(SamParser *in, BamAlignment *o) {
 	is_aligned = -1;

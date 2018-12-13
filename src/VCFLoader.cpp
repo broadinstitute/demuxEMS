@@ -22,6 +22,7 @@
 #include <cassert>
 #include <cstdlib>
 #include <cstdint>
+#include <vector>
 #include <string>
 #include <fstream>
 #include <sstream>
@@ -165,3 +166,25 @@ void VCFLoader::loadVCF(std::string input_vcf_file) {
 	fin.close();
 	if (is_gzip) gin.reset();
 }
+
+void VCFLoader::reOrderSNP(std::vector<std::string>& chrom_names) {
+	chrom_ids.clear();
+	chrom_snps.clear();
+
+	int tid = 0;
+	for (auto&& chrom_name : chrom_names) {
+		printf("%s\n", typeid(chrom_name).name());
+		exit(-1);
+
+		auto iter = snpMap.find(chrom_name);
+		if (iter != snpMap.end()) {
+			chrom_ids.push_back(tid);
+			chrom_snps.push_back(&(iter->second));
+		}
+		++tid;
+	}
+
+	nchr = chrom_ids.size();
+	reset();
+}
+

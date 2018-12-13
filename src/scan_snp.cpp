@@ -32,7 +32,9 @@ int main(int argc, char* argv[]) {
 
 	const bam_hdr_t* header = parser->getHeader();
 	for (int i = 0; i < header->n_targets; ++i) {
-		cout<< header->target_name[i]<< '\t'<< header->target_len[i]<< endl;
+		string chr_name = string(header->target_name[i]);
+		if (chr_name.substr(0, 3) == "chr" && chr_name != "chrM") cout<< chr_name<< endl;
+
 	}
 	// vcf_loader.loadVCF(argv[1]);
 

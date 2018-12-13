@@ -60,8 +60,7 @@ bool BamAlignment::read(SamParser *in, BamAlignment *o) {
 	if (b == NULL) b = bam_init1();
 	if (!in->read(b)) return false;
 
-
-	is_paired = bam_is_paired(b);
+	is_paired = bam_is_paired(b) && !ignore_paired;
 	// read the second mate
 	if (is_paired) { 
 		if (b2 == NULL) b2 = bam_init1();

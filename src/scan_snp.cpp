@@ -30,6 +30,10 @@ int main(int argc, char* argv[]) {
 	if (num_threads > 1) assert(p.pool = hts_tpool_init(num_threads));
 	parser = new SamParser(argv[2], num_threads > 1 ? &p : NULL);
 
+	const bam_hdr_t* header = parser->getHeader();
+	for (int i = 0; i < header->n_targets; ++i) {
+		cout<< header->target_name[i]<< '\t'<< header->target_len[i]<< endl;
+	}
 	// vcf_loader.loadVCF(argv[1]);
 
 	// SNPMapType& snp_map = vcf_loader.getMap();

@@ -41,7 +41,7 @@
 
 class BamAlignment {
 public:
-	BamAlignment() : is_paired(false), is_aligned(-1), b(NULL), b2(NULL) {
+	BamAlignment(bool ignore_paired = false) : is_paired(false), is_aligned(-1), ignore_paired(ignore_paired), b(NULL), b2(NULL) {
 	}
 
 	BamAlignment(const BamAlignment& o) : b(NULL), b2(NULL) {
@@ -68,7 +68,7 @@ public:
 			if (bam_is_rev(b) != bam_is_rev(o.b)) return bam_is_rev(b) < bam_is_rev(o.b);
 			if (b->core.n_cigar != o.b->core.n_cigar) return b->core.n_cigar < o.b->core.n_cigar;
 			cigar1 = bam_get_cigar(b); cigar2 = bam_get_cigar(o.b);
-			for (int i = 0; i < b->core.n_cigar; ++i) 
+			for (int i = 0; i < (int)b->core.n_cigar; ++i) 
 				if (cigar1[i] != cigar2[i]) return cigar1[i] < cigar2[i];
 		}
 
@@ -78,7 +78,7 @@ public:
 			if (bam_is_rev(b2) != bam_is_rev(o.b2)) return bam_is_rev(b2) < bam_is_rev(o.b2);
 			if (b2->core.n_cigar != o.b2->core.n_cigar) return b2->core.n_cigar < o.b2->core.n_cigar;
 			cigar1 = bam_get_cigar(b2); cigar2 = bam_get_cigar(o.b2);
-			for (int i = 0; i < b2->core.n_cigar; ++i) 
+			for (int i = 0; i < (int)b2->core.n_cigar; ++i) 
 				if (cigar1[i] != cigar2[i]) return cigar1[i] < cigar2[i];
 		}
 
@@ -339,7 +339,9 @@ private:
 
 	bool is_paired;
 	char is_aligned; // 2 bits, from right to left, the first bit represents first mate and the second bit represents the second mate
-                   	 // Thus, 0, unalignable; 1, only first mate; 2, only second mate; 3, both mates
+					 // Thus, 0, unalignable; 1, only first mate; 2, only second mate; 3, both mates
+
+	bool ignore_paired;
 	
 	bam1_t *b, *b2;
 	
@@ -379,7 +381,7 @@ private:
 	void transfer(bam1_t* b, const bam1_t* other, bool is_secondary); // for gbam <-> tbam, transfer qname, seq, qual, and MD	
 	// Caution: this function may change b->data's adddress!  
 	void expand_data_size(bam1_t* b) {
-		if (b->m_data < b->l_data) {
+		if (b->m_data < (uint32_t)b->l_data) {
 			b->m_data = b->l_data;
 			kroundup32(b->m_data);
 			b->data = (uint8_t*)realloc(b->data, b->m_data);

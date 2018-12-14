@@ -110,7 +110,8 @@ void VCFLoader::loadVCF(std::string input_vcf_file) {
 	SNPVecType *snp_vec = nullptr, new_vec;
 
 	new_vec.clear();
-	int cnt = 0, nsnp = 0;
+	nsnp = 0;
+	int cnt = 0;
 	while (std::getline(gin, line)) {
 		++cnt;
 
@@ -119,7 +120,7 @@ void VCFLoader::loadVCF(std::string input_vcf_file) {
 		assert(std::getline(strin, chrom, '\t')); // CHROM
 
 		assert(std::getline(strin, field, '\t')); // POS
-		pos = std::stoi(field);
+		pos = std::stoi(field) - 1; // convert to 0-based position
 
 		assert(std::getline(strin, field, '\t')); // ID
 
@@ -173,9 +174,6 @@ void VCFLoader::reOrderSNP(std::vector<std::string>& chrom_names) {
 
 	int tid = 0;
 	for (auto&& chrom_name : chrom_names) {
-		printf("%s\n", typeid(chrom_name).name());
-		exit(-1);
-
 		auto iter = snpMap.find(chrom_name);
 		if (iter != snpMap.end()) {
 			chrom_ids.push_back(tid);
@@ -187,4 +185,3 @@ void VCFLoader::reOrderSNP(std::vector<std::string>& chrom_names) {
 	nchr = chrom_ids.size();
 	reset();
 }
-

@@ -75,7 +75,7 @@ public:
 	static void setNumDonor(int num) { nDonor = num; }
 
 private:
-	int pos; // chromosome position
+	int pos; // chromosome position, 0-based
 	char ref, alt; // reference allele and alternative allele
 	uint64_t* genotypes; // genotypes for each donor, 0: R/R; 1: R/A; 2: A/A; 3: unknown
 
@@ -93,7 +93,7 @@ typedef std::unordered_map<std::string, SNPVecType> SNPMapType;
 class VCFLoader {
 public:
 	VCFLoader() {
-		nsnp = nchr = cur_chr = cur_vecp = cur_chr_copy = cur_vecp_copy = 0;
+		nsnp = nchr = cur_chr = cur_vecp = snp_id = cur_chr_copy = cur_vecp_copy = snp_id_copy = 0;
 	}
 
 	void loadVCF(std::string input_vcf_file);
@@ -103,21 +103,24 @@ public:
 	void reOrderSNP(std::vector<std::string>& chrom_names);
 
 	void reset() {
-		cur_chr = cur_vecp = cur_chr_copy = cur_vecp_copy = 0;
+		cur_chr = cur_vecp = snp_id = cur_chr_copy = cur_vecp_copy = snp_id_copy = 0;
 	}
 
 	void save_pointer() {
 		cur_chr_copy = cur_chr;
 		cur_vecp_copy = cur_vecp;
+		snp_id_copy = snp_id;
 	}
 
 	void load_pointer() {
 		cur_chr = cur_chr_copy;
 		cur_vecp = cur_vecp_copy;
+		snp_id = snp_id_copy;
 	}
 
 	bool isValid() const { 
-		return cur_chr < nchr && cur_vecp < chrom_snps[cur_chr]->size();
+		// return cur_chr < nchr && cur_vecp < (int)chrom_snps[cur_chr]->size();
+		return snp_id < nsnp;
 	}
 
 	int getTid() const { 
@@ -132,12 +135,17 @@ public:
 		return chrom_snps[cur_chr]->at(cur_vecp);
 	}
 
+	int getSnpID() const {
+		return snp_id;
+	}
+
 	void next() {
 		++cur_vecp;
-		if (cur_vecp >= chrom_snps[cur_chr]->size()) {
+		if (cur_vecp >= (int)chrom_snps[cur_chr]->size()) {
 			++cur_chr;
 			cur_vecp = 0;
 		}
+		++snp_id;
 	}
 
 private:
@@ -149,8 +157,8 @@ private:
 	std::vector<int> chrom_ids;
 	std::vector<SNPVecType*> chrom_snps;
 
-	int cur_chr, cur_vecp; // current position in chrom_snps (cur_chr) and current position in chrom_snps[cur_chr]
-	int cur_chr_copy, cur_vecp_copy; // a copy of the cur_chr & cur_vecp;
+	int cur_chr, cur_vecp, snp_id; // current position in chrom_snps (cur_chr) and current position in chrom_snps[cur_chr]
+	int cur_chr_copy, cur_vecp_copy, snp_id_copy; // a copy of the cur_chr & cur_vecp;
 };
 
 #endif

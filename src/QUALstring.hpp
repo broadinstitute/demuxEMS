@@ -52,6 +52,9 @@ public:
 		}
 	}
 	
+	// return current seq string
+	void setCurrent() { return_current = true; }
+
 	int getLen() const { return len; }
 	
 	// 33 is already deducted

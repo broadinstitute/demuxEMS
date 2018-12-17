@@ -72,8 +72,8 @@ int main(int argc, char* argv[]) {
 	int cnt = 0;
 	while (ba.read(parser)) {
 		if (ba.isAligned() & 1) {
-			int tid = ba.get_tid();
-			int pos = ba.getLeftMostPos();
+			tid = ba.get_tid();
+			pos = ba.getLeftMostPos();
 
 			while (vcf_loader.isValid() && ((vcf_loader.getTid() < tid) || ((vcf_loader.getTid() == tid) && (vcf_loader.getPos() < pos)))) vcf_loader.next();
 			if (!vcf_loader.isValid()) break;

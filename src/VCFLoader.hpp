@@ -65,6 +65,8 @@ public:
 	char getRef() const { return ref; }
 	char getAlt() const { return alt; }
 	int getDonorGenotype(int donor) const;
+	
+	const unit64_t* getGenotypeVec() const { return genotypes; }
 
 	void setPos(int pos) { this->pos = pos; }
 	void setRef(char ref) { this->ref = ref; }
@@ -72,7 +74,10 @@ public:
 	void setDonorGenotype(int donor, std::string genotype);
 
 
-	static void setNumDonor(int num) { nDonor = num; }
+	static void setNumDonor(int num) { 
+		nDonor = num;
+		geno_size = (nDonor >> SHIFT1) + ((nDonor & BASE1) > 0);
+	}
 
 private:
 	int pos; // chromosome position, 0-based
@@ -84,7 +89,7 @@ private:
 	static const int SHIFT2[16]; // shifts within in one uint64_t
 	static const uint64_t BASE2 = 3; // within one uint64_t, & 3 to get the genotype
 
-	static int nDonor;
+	static int nDonor, geno_size;
 };
 
 typedef std::vector<SNPType> SNPVecType;

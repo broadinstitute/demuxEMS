@@ -37,6 +37,7 @@
 const int SNPType::SHIFT2[16] = {0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30};
 
 int SNPType::nDonor;
+int SNPType::geno_size;
 
 int SNPType::getDonorGenotype(int donor) const {
 	assert(nDonor > donor && genotypes != nullptr);
@@ -45,9 +46,8 @@ int SNPType::getDonorGenotype(int donor) const {
 
 void SNPType::setDonorGenotype(int donor, std::string genotype) {
 	if (genotypes == nullptr) {
-		int s = (nDonor >> SHIFT1) + ((nDonor & BASE1) > 0);
-		genotypes = new uint64_t[s];
-		for (int i = 0; i < s; ++i) genotypes[i] = -1;
+		genotypes = new uint64_t[geno_size];
+		for (int i = 0; i < geno_size; ++i) genotypes[i] = -1;
 	}
    
 	uint64_t gvalue = BASE2;

@@ -66,7 +66,7 @@ public:
 	char getAlt() const { return alt; }
 	int getDonorGenotype(int donor) const;
 	
-	const unit64_t* getGenotypeVec() const { return genotypes; }
+	const uint64_t* getGenotypeVec() const { return genotypes; }
 
 	void setPos(int pos) { this->pos = pos; }
 	void setRef(char ref) { this->ref = ref; }
@@ -77,6 +77,10 @@ public:
 	static void setNumDonor(int num) { 
 		nDonor = num;
 		geno_size = (nDonor >> SHIFT1) + ((nDonor & BASE1) > 0);
+	}
+
+	static int getGenoSize() {
+		return geno_size;
 	}
 
 private:

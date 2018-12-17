@@ -60,7 +60,7 @@ int main(int argc, char* argv[]) {
 	vector<string> chr_names;
 	for (int i = 0; i < header->n_targets; ++i) {
 		string chr_name = string(header->target_name[i]);
-		if (chr_name.substr(0, 3) == "chr" && chr_name != "chrM") chr_names.push_back(std::move(chr_name.substr(3)));
+		if (chr_name.substr(0, 3) == "chr" && chr_name != "chrM") chr_names.push_back(chr_name.substr(3));
 		else chr_names.push_back(std::move(chr_name));
 	}
 

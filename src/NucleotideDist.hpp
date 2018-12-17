@@ -60,10 +60,10 @@ typedef std::unordered_map<BarcodeUMI, NucDist> NucDistMap;
 struct GenoKeyType {
 	const uint64_t* genotypes;
 
-	GenoKeyType(uint64_t* genotypes) : genotypes(genotypes) {}
+	GenoKeyType(const uint64_t* genotypes) : genotypes(genotypes) {}
 
 	bool operator< (const GenoKeyType& o) const {
-		for (int i = 0; i < SNP::geno_size; ++i) 
+		for (int i = 0; i < SNPType::getGenoSize(); ++i) 
 			if (genotypes[i] != o.genotypes[i])
 				return genotypes[i] < o.genotypes[i];
 		return false;
@@ -74,7 +74,7 @@ typedef std::unordered_map<int, NucDist*> GenoID2NucDist;
 
 class NucleotideDist {
 public:
-	NucleotideDist(VCFLoader& vcf_loader, barcode_tag = "CB", umi_tag = "UB") : vcf_loader(vcf_loader), barcode_tag(barcode_tag), umi_tag(umi_tag) {
+	NucleotideDist(VCFLoader& vcf_loader, std::string barcode_tag = "CB", std::string umi_tag = "UB") : vcf_loader(vcf_loader), barcode_tag(barcode_tag), umi_tag(umi_tag) {
 		nsnp = vcf_loader.getTotalSNP();
 		snp_nucdist_vec = new NucDistMap*[nsnp];
 		memset(snp_nucdist_vec, 0, sizeof(NucDistMap*));

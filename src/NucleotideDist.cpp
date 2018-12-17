@@ -59,9 +59,9 @@ bool NucleotideDist::collectData(BamAlignment& ba) {
 	pos = ba.getLeftMostPos();
 
 	assert(ba.findTag(barcode_tag.c_str(), tag_p, tag_type) && tag_type == 'Z');
-	insert_pair.first.barcode = std::move(std::string(ba.tag2Z(tag_p)));
+	insert_pair.first.barcode = std::string(ba.tag2Z(tag_p));
 	assert(ba.findTag(umi_tag.c_str(), tag_p, tag_type) && tag_type == 'Z');
-	insert_pair.first.umi = std::move(std::string(ba.tag2Z(tag_p)));
+	insert_pair.first.umi = std::string(ba.tag2Z(tag_p));
 
 	while (vcf_loader.isValid() && ((vcf_loader.getTid() < tid) || ((vcf_loader.getTid() == tid) && (vcf_loader.getPos() < pos)))) vcf_loader.next();
 	if (!vcf_loader.isValid()) return false;
@@ -92,7 +92,7 @@ bool NucleotideDist::collectData(BamAlignment& ba) {
 					if (snp_nucdist_vec[snp_id] == nullptr) {
 						snp_nucdist_vec[snp_id] = new NucDistMap();
 					}
-					auto result = snp_nucdist_vec[snp_id].insert(insert_pair);
+					auto result = snp_nucdist_vec[snp_id]->insert(insert_pair);
 
 					p_err = pow(10.0, -qi.qualAt(snp_rpos) / 10.0);
 					p_crt = 1.0 - p_err;
@@ -101,19 +101,19 @@ bool NucleotideDist::collectData(BamAlignment& ba) {
 					base = si.baseAt(snp_rpos);
 
 					if (base == snp.getRef()) {
-						result.first->second[NucDist::R] += p_crt;
-						result.first->second[NucDist::A] += p_err;
-						result.first->second[NucDist::O] += p_err * 2;
+						result.first->second.dist[NucDist::R] += p_crt;
+						result.first->second.dist[NucDist::A] += p_err;
+						result.first->second.dist[NucDist::O] += p_err * 2;
 					}
 					else if (base == snp.getAlt()) {
-						result.first->second[NucDist::R] += p_err;
-						result.first->second[NucDist::A] += p_crt;
-						result.first->second[NucDist::O] += p_err * 2;
+						result.first->second.dist[NucDist::R] += p_err;
+						result.first->second.dist[NucDist::A] += p_crt;
+						result.first->second.dist[NucDist::O] += p_err * 2;
 					}
 					else {
-						result.first->second[NucDist::R] += p_err;
-						result.first->second[NucDist::A] += p_err;
-						result.first->second[NucDist::O] += p_crt + p_err;
+						result.first->second.dist[NucDist::R] += p_err;
+						result.first->second.dist[NucDist::A] += p_err;
+						result.first->second.dist[NucDist::O] += p_crt + p_err;
 					}
 
 					vcf_loader.next();
@@ -141,7 +141,7 @@ void NucleotideDist::loadBarcodeList(std::string barcode_list_file) {
 	bid = 0;
 	while (std::getline(fin, line)) {
 		barcode2bid[line] = ++bid;
-		barcode_vec.push_pack(line);
+		barcode_vec.push_back(line);
 	}
 
 	fin.close();

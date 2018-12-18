@@ -18,8 +18,8 @@
    USA
 */
 
-#ifndef NUCLEOTIDEDIST
-#define NUCLEOTIDEDIST
+#ifndef NUCLEOTIDEDIST_H_
+#define NUCLEOTIDEDIST_H_
 
 #include <cstring>
 #include <string>

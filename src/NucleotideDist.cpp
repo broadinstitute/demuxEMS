@@ -95,36 +95,37 @@ int NucleotideDist::collectData(BamAlignment& ba) {
 				ub = pos + oplen;
 				while (vcf_loader.isValid() && vcf_loader.getTid() == tid && vcf_loader.getPos() < ub) {
 					snp_rpos = rpos + (vcf_loader.getPos() - pos);
-					const SNPType& snp = vcf_loader.getSNP();
-
-					snp_id = vcf_loader.getSnpID();
-					if (snp_nucdist_vec[snp_id] == nullptr) {
-						snp_nucdist_vec[snp_id] = new NucDistMap();
-					}
-					auto result = snp_nucdist_vec[snp_id]->insert(insert_pair);
-
-					p_err = pow(10.0, -qi.qualAt(snp_rpos) / 10.0);
-					p_crt = 1.0 - p_err;
-					p_err /= 3.0;
-
 					base = si.baseAt(snp_rpos);
+					if (base == 'A' || base == 'C' || base == 'G' || base == 'T') {
+						const SNPType& snp = vcf_loader.getSNP();
 
-					if (base == snp.getRef()) {
-						result.first->second.dist[NucDist::R] += p_crt;
-						result.first->second.dist[NucDist::A] += p_err;
-						result.first->second.dist[NucDist::O] += p_err * 2;
-					}
-					else if (base == snp.getAlt()) {
-						result.first->second.dist[NucDist::R] += p_err;
-						result.first->second.dist[NucDist::A] += p_crt;
-						result.first->second.dist[NucDist::O] += p_err * 2;
-					}
-					else {
-						result.first->second.dist[NucDist::R] += p_err;
-						result.first->second.dist[NucDist::A] += p_err;
-						result.first->second.dist[NucDist::O] += p_crt + p_err;
-					}
+						snp_id = vcf_loader.getSnpID();
+						if (snp_nucdist_vec[snp_id] == nullptr) {
+							snp_nucdist_vec[snp_id] = new NucDistMap();
+						}
+						auto result = snp_nucdist_vec[snp_id]->insert(insert_pair);
 
+						p_err = pow(10.0, -qi.qualAt(snp_rpos) / 10.0);
+						p_crt = 1.0 - p_err;
+						p_err /= 3.0;
+
+
+						if (base == snp.getRef()) {
+							result.first->second.dist[NucDist::R] += p_crt;
+							result.first->second.dist[NucDist::A] += p_err;
+							result.first->second.dist[NucDist::O] += p_err * 2;
+						}
+						else if (base == snp.getAlt()) {
+							result.first->second.dist[NucDist::R] += p_err;
+							result.first->second.dist[NucDist::A] += p_crt;
+							result.first->second.dist[NucDist::O] += p_err * 2;
+						}
+						else {
+							result.first->second.dist[NucDist::R] += p_err;
+							result.first->second.dist[NucDist::A] += p_err;
+							result.first->second.dist[NucDist::O] += p_crt + p_err;
+						}
+					}
 					vcf_loader.next();
 				}
 			}

@@ -14,6 +14,7 @@
 #include "SamParser.hpp"
 #include "BamAlignment.hpp"
 #include "NucleotideDist.hpp"
+#include "DemuxAlgo.hpp"
 
 using namespace std;
 
@@ -28,7 +29,7 @@ BamAlignment ba(true); // important to set true here, otherwise will read paired
 
 SufficientStatistics ss;
 NucleotideDist *nd;
-
+DemuxAlgo *algo;
 
 
 int main(int argc, char* argv[]) {
@@ -70,14 +71,17 @@ int main(int argc, char* argv[]) {
 	nd->parseData(ss);
 	delete nd;
 
-	ofstream fout(argv[4]);
-	fout<< ss.cellxgeno[0].size()<< endl;
-	for (int i = 0; i < (int)ss.cellxgeno[0].size(); ++i) {
-		fout<< ss.cellxgeno[0][i];
-		for (int j = 0; j < NucDist::size; ++j) fout<< '\t'<< ss.cellxnd[0][i].dist[j];
-		fout<< endl;
-	}
-	fout.close();
+	algo = new DemuxAlgo(vcf_loader.getNumDonor(), ss);
+	algo->estimate_background();
+	delete algo;
+	// ofstream fout(argv[4]);
+	// fout<< ss.cellxgeno[0].size()<< endl;
+	// for (int i = 0; i < (int)ss.cellxgeno[0].size(); ++i) {
+	// 	fout<< ss.cellxgeno[0][i];
+	// 	for (int j = 0; j < NucDist::size; ++j) fout<< '\t'<< ss.cellxnd[0][i].dist[j];
+	// 	fout<< endl;
+	// }
+	// fout.close();
 
 	return 0;
 }

@@ -18,8 +18,8 @@
    USA
 */
 
-#ifndef VCFLOADER
-#define VCFLOADER
+#ifndef VCFLOADER_H_
+#define VCFLOADER_H_
 
 #include <cstdint>
 #include <cassert>
@@ -102,10 +102,12 @@ typedef std::unordered_map<std::string, SNPVecType> SNPMapType;
 class VCFLoader {
 public:
 	VCFLoader() {
-		nsnp = nchr = cur_chr = cur_vecp = snp_id = cur_chr_copy = cur_vecp_copy = snp_id_copy = 0;
+		nDonor = nsnp = nchr = cur_chr = cur_vecp = snp_id = cur_chr_copy = cur_vecp_copy = snp_id_copy = 0;
 	}
 
 	void loadVCF(std::string input_vcf_file);
+
+	int getNumDonor() const { return nDonor; }
 
 	int getTotalSNP() const { return nsnp; }
 
@@ -158,6 +160,7 @@ public:
 	}
 
 private:
+	int nDonor;
 	int nsnp;
 	std::vector<std::string> donor_names;
 	SNPMapType snpMap;

@@ -18,8 +18,8 @@
    USA
 */
 
-#ifndef SUFFICIENTSTATISTICS
-#define SUFFICIENTSTATISTICS
+#ifndef SUFFICIENTSTATISTICS_H_
+#define SUFFICIENTSTATISTICS_H_
 
 #include <cstring>
 #include <string>

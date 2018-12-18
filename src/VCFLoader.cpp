@@ -65,7 +65,6 @@ void SNPType::setDonorGenotype(int donor, std::string genotype) {
 
 
 void VCFLoader::loadVCF(std::string input_vcf_file) {
-	int nDonor;
 	std::ifstream fin;
 	boost::iostreams::filtering_istream gin;
 	std::string line, field;

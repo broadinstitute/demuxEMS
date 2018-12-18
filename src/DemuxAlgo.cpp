@@ -26,7 +26,7 @@
 #include "SufficientStatistics.hpp"
 #include "DemuxAlgo.hpp"
 
-const int DemuxAlgo::geno_allele_to_prob[3][3] = {{0, 2, 2}, {1, 1, 2}, {2, 0, 2}}
+const int DemuxAlgo::geno_allele_to_prob[3][3] = {{0, 2, 2}, {1, 1, 2}, {2, 0, 2}};
 
 void DemuxAlgo::estimate_background() {
 	double *P_ec, *alpha_ec; // expected count arrays

@@ -33,9 +33,9 @@ public:
 		init_prob = 1.0 / nDonor;
 		for (int i = 0; i < nDonor; ++i) P[i] = init_prob;
 
-		theta = new double*[ss.n_cells];
+		theta = new double*[ss.ncells];
 		init_prob = 1.0 / (nDonor + 1);
-		for (int i = 0; i < ss.n_cells; ++i) {
+		for (int i = 0; i < ss.ncells; ++i) {
 			theta[i] = new double[nDonor + 1];
 			for (int j = 0; j <= nDonor; ++j) theta[i][j] = init_prob;
 		}

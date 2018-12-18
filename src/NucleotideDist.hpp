@@ -27,6 +27,7 @@
 #include <vector>
 #include <map>
 #include <unordered_map>
+#include <unordered_set>
 
 #include "VCFLoader.hpp"
 #include "SufficientStatistics.hpp"
@@ -74,10 +75,12 @@ typedef std::unordered_map<int, NucDist*> GenoID2NucDist;
 
 class NucleotideDist {
 public:
-	NucleotideDist(VCFLoader& vcf_loader, std::string barcode_tag = "CB", std::string umi_tag = "UB") : vcf_loader(vcf_loader), barcode_tag(barcode_tag), umi_tag(umi_tag) {
+	NucleotideDist(VCFLoader& vcf_loader, std::string barcode_tag = "CB", std::string umi_tag = "UB", int empty_upper_umi = 50) : vcf_loader(vcf_loader), barcode_tag(barcode_tag), umi_tag(umi_tag), empty_upper_umi(empty_upper_umi) {
 		nsnp = vcf_loader.getTotalSNP();
 		snp_nucdist_vec = new NucDistMap*[nsnp];
 		memset(snp_nucdist_vec, 0, sizeof(NucDistMap*));
+		barcodexumi.clear();
+		empty_barcodes.clear();
 	}
 
 	~NucleotideDist() {
@@ -86,7 +89,9 @@ public:
 		delete[] snp_nucdist_vec;
 	}
 
-	bool collectData(BamAlignment& ba); // return false if run out of SNPs
+	int collectData(BamAlignment& ba); // 0, run out of SNPs; 1, valid; 2, skip
+
+	void collectEmptyBarcodes();
 
 	void loadBarcodeList(std::string barcode_list_file);
 
@@ -95,6 +100,10 @@ public:
 private:
 	VCFLoader& vcf_loader;
 	std::string barcode_tag, umi_tag;
+
+	int empty_upper_umi;
+	std::unordered_map<std::string, std::unordered_set<std::string> > barcodexumi;
+	std::unordered_set<std::string> empty_barcodes;
 
 	int nsnp;
 	NucDistMap** snp_nucdist_vec;

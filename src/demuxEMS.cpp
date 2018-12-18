@@ -52,13 +52,19 @@ int main(int argc, char* argv[]) {
 	int cnt = 0, nalign = 0;
 	nd = new NucleotideDist(vcf_loader);
 	while (ba.read(parser)) {
-		if (ba.isAligned() & 1) nd->collectData(ba), ++nalign;
+		if (ba.isAligned() & 1) {
+			int ret = nd->collectData(ba);
+			if (ret == 0) break;
+			nalign += ret == 1;
+		}
 		++cnt;
 		if (cnt % 1000000 == 0) printf("PROCESSED %d lines, %d aligned.\n", cnt, nalign);
 	}
 
 	delete parser;
 	if (num_threads > 1) hts_tpool_destroy(p.pool);
+
+	nd->collectEmptyBarcodes();
 
 	nd->loadBarcodeList(argv[3]);
 	nd->parseData(ss);

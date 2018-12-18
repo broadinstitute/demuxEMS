@@ -26,6 +26,10 @@
 #include <string>
 #include <fstream>
 
+#include <vector>
+#include <unordered_set>
+#include <algorithm>
+
 #include "VCFLoader.hpp"
 #include "SufficientStatistics.hpp"
 #include "CIGARstring.hpp"
@@ -36,7 +40,7 @@
 
 
 
-bool NucleotideDist::collectData(BamAlignment& ba) {
+int NucleotideDist::collectData(BamAlignment& ba) {
 	int tid, pos, rpos; // rpos, read pos
 	int optype, oplen;
 	int ub, snp_rpos; // ub, upper bound
@@ -58,13 +62,18 @@ bool NucleotideDist::collectData(BamAlignment& ba) {
 	tid = ba.get_tid();
 	pos = ba.getLeftMostPos();
 
-	assert(ba.findTag(barcode_tag.c_str(), tag_p, tag_type) && tag_type == 'Z');
+	if (!ba.findTag(barcode_tag.c_str(), tag_p, tag_type)) return 2;
+	assert(tag_type == 'Z');
 	insert_pair.first.barcode = std::string(ba.tag2Z(tag_p));
-	assert(ba.findTag(umi_tag.c_str(), tag_p, tag_type) && tag_type == 'Z');
+	if (!ba.findTag(umi_tag.c_str(), tag_p, tag_type)) return 2;
+	assert(tag_type == 'Z');
 	insert_pair.first.umi = std::string(ba.tag2Z(tag_p));
 
+	auto bu_res = barcodexumi.insert(std::make_pair(insert_pair.first.barcode, std::unordered_set<std::string>()));
+	bu_res.first->second.insert(insert_pair.first.umi);
+
 	while (vcf_loader.isValid() && ((vcf_loader.getTid() < tid) || ((vcf_loader.getTid() == tid) && (vcf_loader.getPos() < pos)))) vcf_loader.next();
-	if (!vcf_loader.isValid()) return false;
+	if (!vcf_loader.isValid()) return 0;
 
 	if (vcf_loader.getTid() == tid) {
 		vcf_loader.save_pointer();
@@ -127,7 +136,41 @@ bool NucleotideDist::collectData(BamAlignment& ba) {
 		vcf_loader.load_pointer();
 	}
 
-	return true;
+	return 1;
+}
+
+void NucleotideDist::collectEmptyBarcodes() {
+	empty_barcodes.clear();
+	for (auto&& kv : barcodexumi)
+		if ((int)kv.second.size() < empty_upper_umi) empty_barcodes.insert(kv.first);
+	barcodexumi.clear();
+	printf("Collected %d empty droplets.\n", (int)empty_barcodes.size());
+	// int i = 0;
+	// std::vector<std::string> barcodes;
+	// std::vector<int> numis, sorted;
+
+	// barcodes.resize(barcodexumi.size());
+	// numis.assign(barcodexumi.size(), 0);
+	// for (auto&& kv : barcodexumi) {
+	// 	barcodes[i] = kv.first;
+	// 	numis[i] = kv.second.size();
+	// 	++i;
+	// }
+
+	// sorted = numis;
+	// std::sort(sorted.begin(), sorted.end());
+
+	// std::ofstream fout("tc.txt");
+	// int cur_numi = 0, count = 0;
+	// for (auto&& numi : sorted) {
+	// 	if (cur_numi < numi) {
+	// 		if (count > 0) fout<< cur_numi<< '\t'<< count<< std::endl;
+	// 		cur_numi = numi; count = 0;
+	// 	}
+	// 	++count;
+	// }
+	// if (count > 0) fout<< cur_numi<< '\t'<< count<< std::endl;
+	// fout.close();
 }
 
 void NucleotideDist::loadBarcodeList(std::string barcode_list_file) {
@@ -151,33 +194,40 @@ void NucleotideDist::loadBarcodeList(std::string barcode_list_file) {
 void NucleotideDist::parseData(SufficientStatistics& ss) {
 	int gid = 0;
 	int cur_gid, barcode_id;
-	GenoID2NucDist example;
 
 	geno2gid.clear();
-	example.clear();
 	cells.resize(barcode_vec.size());
-
 
 	ss.cell_barcodes = barcode_vec;
 	ss.diff_genos.clear();
 
-
 	vcf_loader.reset();
 	for (int i = 0; i < nsnp; ++i) {
 		if (snp_nucdist_vec[i] != nullptr) {
-			const SNPType& snp = vcf_loader.getSNP();
-			auto geno2gid_result = geno2gid.insert(std::make_pair(GenoKeyType(snp.getGenotypeVec()), gid));
-			cur_gid = geno2gid_result.first->second;
-
-			if (geno2gid_result.second) {
-				ss.diff_genos.push_back(&snp);
-				++gid;
-			}
+			cur_gid = -1;
 
 			for (auto&& kv : *snp_nucdist_vec[i]) {
-				kv.second.normalize();
 				auto iter = barcode2bid.find(kv.first.barcode);
-				barcode_id = iter == barcode2bid.end() ? 0 : iter->second;
+				barcode_id = iter == barcode2bid.end() ? -1 : iter->second;
+				if (barcode_id < 0) {
+					if (empty_barcodes.find(kv.first.barcode) == empty_barcodes.end()) continue;
+					barcode_id = 0;
+				}
+
+				kv.second.normalize();
+
+				if (cur_gid < 0) {
+					const SNPType& snp = vcf_loader.getSNP();
+					auto geno2gid_result = geno2gid.insert(std::make_pair(GenoKeyType(snp.getGenotypeVec()), gid));
+
+					cur_gid = geno2gid_result.first->second;
+
+					if (geno2gid_result.second) {
+						ss.diff_genos.push_back(&snp);
+						++gid;
+					}
+				}
+
 				auto result = cells[barcode_id].insert(std::make_pair(cur_gid, &kv.second));
 				if (!result.second) {
 					result.first->second->add(kv.second);
@@ -189,6 +239,7 @@ void NucleotideDist::parseData(SufficientStatistics& ss) {
 
 	ss.ncells = ss.cell_barcodes.size() - 1;
 	ss.ngenos = ss.diff_genos.size();
+	printf("ncells = %d, ngenos = %d.\n", ss.ncells, ss.ngenos);
 
 	ss.cellxgeno.resize(ss.ncells + 1);
 	ss.cellxnd.resize(ss.ncells + 1);
@@ -200,6 +251,7 @@ void NucleotideDist::parseData(SufficientStatistics& ss) {
 		for (auto&& kv : cells[i]) {
 			ss.cellxgeno[i][j] = kv.first;
 			ss.cellxnd[i][j].copy(*kv.second);
+			++j;
 		}
 	}
 }

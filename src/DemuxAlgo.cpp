@@ -20,6 +20,7 @@
 
 #include <cmath>
 #include <cstdio>
+#include <cassert>
 #include <cstring>
 #include <thread>
 #include <vector>
@@ -117,7 +118,7 @@ void DemuxAlgo::demultiplex(int thread_id, int fr, int to, double prior_noise, d
 	theta_vec_ec = new double[nDonor + 1];
 	theta_vec_old = new double[nDonor + 1];
 
-	for (cell_id = fr; cell_id < to; ++cell_id) {
+	for (int cell_id = fr; cell_id < to; ++cell_id) {
 		std::vector<int>& genovec = ss.cellxgeno[cell_id];
 		std::vector<NucDist>& ndvec = ss.cellxnd[cell_id];
 		s = ndvec.size();
@@ -149,9 +150,13 @@ void DemuxAlgo::demultiplex(int thread_id, int fr, int to, double prior_noise, d
 
 			// M step
 			denom = 0.0;
-			for (int k = 0; k < nDonor; ++k) denom += std::max(theta_vec_ec[k] + (prior_donor - 1.0), 0.0);
-			denom += std::max(theta_vec_ec[nDonor] + (prior_noise - 1.0), 0.0);
-			for (int k = 0; k <= nDonor; ++k) theta_vec[k] = theta_vec_ec[k] / denom;
+			for (int k = 0; k < nDonor; ++k) {
+				cond_prob[k] = std::max(theta_vec_ec[k] + (prior_donor - 1.0), 0.0); 
+				denom += cond_prob[k];
+			}
+			cond_prob[nDonor] = std::max(theta_vec_ec[nDonor] + (prior_noise - 1.0), 0.0);
+			denom += cond_prob[nDonor];
+			for (int k = 0; k <= nDonor; ++k) theta_vec[k] = cond_prob[k] / denom;
 
 			// Calculate epsilon
 			epsilon = 0.0;
@@ -185,9 +190,11 @@ void DemuxAlgo::demuxEMS(int num_threads, double prior_noise, double prior_donor
 	printf("DemuxAlgo::demuxEMS is finished.\n");
 }
 
-void DemuxAlgo::writeOutputs(std::string output_name, const std::vector<std::string>& donor_names) {
-	double nsnp;
+void DemuxAlgo::writeOutputs(std::string output_name, const std::vector<std::string>& donor_names, double threshold) {
+	int nassign;
+	double nsnp, denom;
 	std::ofstream fout;
+	std::vector<SortType> norm_frac(nDonor);
 
 	fout.open(output_name + ".params");
 	fout.setf(std::ios::scientific, std::ios::floatfield);
@@ -203,18 +210,31 @@ void DemuxAlgo::writeOutputs(std::string output_name, const std::vector<std::str
 	fout.precision(5);
 	fout<< "BARCODE\tNSNP\tAMBIENT";
 	for (int i = 0; i < nDonor; ++i) fout<< '\t'<< donor_names[i];
-	fout<< std::endl;
+	fout<< "\tDEMUX_TYPE\tASSIGNMENT"<< std::endl;
 	for (int i = 1; i <= ss.ncells; ++i) {
 		fout<< ss.cell_barcodes[i];
 		nsnp = 0.0;
-		for (int j = 0; j < (int)cellxnd[i].size(); ++j)
+		for (int j = 0; j < (int)ss.cellxnd[i].size(); ++j)
 			for (int k = 0; k < NucDist::size; ++k)
-				nsnp += cellxnd[i][j].dist[k];
+				nsnp += ss.cellxnd[i][j].dist[k];
 		fout<< '\t'<< int(nsnp + 1e-2);
 		fout<< '\t'<< theta[i][nDonor];
-		for (int j = 0; j < nDonor; ++j)
-			fout<< '\t'<< theta[i][j];
-		fout<< endl;
+		denom = 0.0;
+		for (int k = 0; k < nDonor; ++k) {
+			fout<< '\t'<< theta[i][k];
+			denom += theta[i][k];
+		}
+		for (int k = 0; k < nDonor; ++k) {
+			norm_Frac[k].donor_id = k;
+			norm_frac[k].frac = theta[i][k] / denom;
+		}
+		std::sort(norm_frac.begin(), norm_frac.end());
+		for (nassign = 0; nassign < nDonor; ++nassign)
+			if (norm_frac[nassign] < threshold) break;
+		assert(nassign > 0);
+		fout<< '\t'<< (nassign == 1 ? "singlet" : "doublet")<< '\t';
+		for (int k = 0; k < nassign; ++k) fout<< (k > 0 ? ',' : '')<< donor_names[norm_frac[k].donor_id];
+		fout<< std::endl;
 	}	
 
 	printf("DemuxAlgo::writeOutputs is finished.\n");

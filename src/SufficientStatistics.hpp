@@ -53,7 +53,7 @@ struct NucDist {
 };
 
 struct SufficientStatistics {
-	int ncells, ngenos; // number of cell barcodes and different genotypes
+	int ncells; // number of cell barcodes
 	std::vector<std::string> cell_barcodes; // cell_barcodes[0] is ambient RNA
 	std::vector<const SNPType*> diff_genos; // distinct genotypes
 
@@ -61,7 +61,7 @@ struct SufficientStatistics {
 	std::vector<std::vector<NucDist> > cellxnd; // cell x nuc dist matrix 
 
 	SufficientStatistics() {
-		ncells = ngenos = 0;
+		ncells = 0;
 		cell_barcodes.clear();
 		diff_genos.clear();
 		cellxgeno.clear();

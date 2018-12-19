@@ -22,7 +22,7 @@ using namespace std;
 
 
 int num_threads;
-double prior_noise, prior_donor, tol;
+double alpha, prior_noise, prior_donor, tol, threshold;
 
 htsThreadPool p = {NULL, 0};
 
@@ -37,19 +37,23 @@ DemuxAlgo *algo;
 
 int main(int argc, char* argv[]) {
 	if (argc < 5) {
-		printf("Usage: demuxEMS input.vcf.gz input.bam barcodes.tsv output_name [-p num_threads] [--prior-noise prior_noise] [--prior-donor prior_donor] [--tol tol]\n");
+		printf("Usage: demuxEMS input.vcf.gz input.bam barcodes.tsv output_name [-p num_threads] [--alpha alpha] [--prior-noise prior_noise] [--prior-donor prior_donor] [--tol tol] [--threshold threshold]\n");
 		exit(-1);
 	}
 
 	num_threads = 1;
+	alpha = 0.05;
 	prior_noise = 1.0;
 	prior_donor = 0.0;
 	tol = 1e-6;
+	threshold = 0.1;
 	for (int i = 5; i < argc; ++i) {
 		if (!strcmp(argv[i], "-p")) num_threads = atoi(argv[i + 1]);
+		if (!strcmp(argv[i], "--alpha")) alpha = atof(argv[i + 1]);
 		if (!strcmp(argv[i], "--prior-noise")) prior_noise = atof(argv[i + 1]);
 		if (!strcmp(argv[i], "--prior-donor")) prior_donor = atof(argv[i + 1]);
 		if (!strcmp(argv[i], "--tol")) tol = atof(argv[i + 1]);
+		if (!strcmp(argv[i], "--threshold")) threshold = atof(argv[i + 1]);
 	}
 
 	vcf_loader.loadVCF(argv[1]);
@@ -97,10 +101,10 @@ int main(int argc, char* argv[]) {
 	nd->parseData(ss);
 	delete nd;
 
-	algo = new DemuxAlgo(vcf_loader.getNumDonor(), ss);
+	algo = new DemuxAlgo(vcf_loader.getNumDonor(), ss, alpha);
 	algo->estimate_background();
 	algo->demuxEMS(num_threads);
-	algo->writeOutputs(argv[4], vcf_loader.getDonorNames());
+	algo->writeOutputs(argv[4], vcf_loader.getDonorNames(), threshold);
 	delete algo;
 
 	return 0;

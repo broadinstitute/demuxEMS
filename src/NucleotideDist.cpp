@@ -239,8 +239,7 @@ void NucleotideDist::parseData(SufficientStatistics& ss) {
 	}
 
 	ss.ncells = ss.cell_barcodes.size() - 1;
-	ss.ngenos = ss.diff_genos.size();
-	printf("ncells = %d, ngenos = %d.\n", ss.ncells, ss.ngenos);
+	printf("ncells = %d, ngenos = %d.\n", ss.ncells, (int)ss.diff_genos.size());
 
 	ss.cellxgeno.resize(ss.ncells + 1);
 	ss.cellxnd.resize(ss.ncells + 1);

@@ -27,9 +27,20 @@
 #include "SufficientStatistics.hpp"
 
 
+struct SortType {
+	int donor_id;
+	double frac;
+
+	SortType() : donor_id(-1), frac(0.0) {}
+
+	bool operator< (const SortType& o) const {
+		return frac > o.frac;
+	}
+};
+
 class DemuxAlgo {
 public:
-	DemuxAlgo(int nDonor, SufficientStatistics& ss) : nDonor(nDonor), ss(ss), alpha(0.05) { 
+	DemuxAlgo(int nDonor, SufficientStatistics& ss, double alpha = 0.05) : nDonor(nDonor), ss(ss), alpha(alpha) { 
 		double init_prob;
 
 		P = new double[nDonor];
@@ -56,7 +67,7 @@ public:
 
 	void demuxEMS(int num_threads, double prior_noise = 1.0, double prior_donor = 0.0, double tol = 1e-6);
 
-	void writeOutputs(std::string output_name, const std::vector<std::string>& donor_names);
+	void writeOutputs(std::string output_name, const std::vector<std::string>& donor_names, double threshold = 0.1);
 
 private:
 	int nDonor;

@@ -106,12 +106,16 @@ void VCFLoader::loadVCF(std::string input_vcf_file) {
 	std::string curr_chrom = "", chrom;
 	int pos;
 	char ref, alt;
+	std::vector<std::string> genotype_strings(nDonor, "");
+	int nmissing = 0;
+
 	SNPVecType *snp_vec = nullptr, new_vec;
 
 	new_vec.clear();
 	nsnp = 0;
 	int cnt = 0;
 	while (std::getline(gin, line)) {
+		if (cnt > 0 && cnt % 1000000 == 0) printf("Processed %d lines, loaded %d SNPs, discarded %d SNPs missing genotype information.\n", cnt, nsnp, nmissing);
 		++cnt;
 
 		strin.clear();
@@ -138,6 +142,20 @@ void VCFLoader::loadVCF(std::string input_vcf_file) {
 
 		assert(std::getline(strin, field, '\t')); // INFO
 
+		if (nDonor > 0) {
+			assert(std::getline(strin, field, '\t') && field.substr(0, 2) == "GT"); // FORMAT
+			int i;
+			for (i = 0; i < nDonor; ++i) {
+				assert(std::getline(strin, field, '\t')); // Donor
+				genotype_strings[i] = field.substr(0, field.find_first_of(':'));
+				if (!(genotype_strings[i] == "0/0" || genotype_strings[i] == "0/1" || genotype_strings[i] == "1/1")) {
+					++nmissing;
+					break;
+				}
+			}
+			if (i < nDonor) continue;
+		}
+
 		if (chrom != curr_chrom) {
 			auto iter = snpMap.find(chrom);
 			if (iter == snpMap.end()) {
@@ -148,20 +166,13 @@ void VCFLoader::loadVCF(std::string input_vcf_file) {
 		}
 
 		snp_vec->emplace_back(pos, ref, alt);
+		if (nDonor > 0)
+			for (int i = 0; i < nDonor; ++i)
+				snp_vec->back().setDonorGenotype(i, genotype_strings[i]);
 		++nsnp;
-
-		if (nDonor > 0) {
-			assert(std::getline(strin, field, '\t') && field.substr(0, 2) == "GT"); // FORMAT
-			for (int i = 0; i < nDonor; ++i) {
-				assert(std::getline(strin, field, '\t')); // Donor
-				snp_vec->back().setDonorGenotype(i, field.substr(0, field.find_first_of(':')));
-			}
-		}
-				
-		if (cnt % 1000000 == 0) printf("Processed %d lines, loaded %d SNPs.\n", cnt, nsnp);
 	}
 
-	printf("Loaded %d SNPs in total.\n", nsnp);
+	printf("Loaded %d SNPs in total, discarded %d SNPs missing genotype information.\n", nsnp, nmissing);
 
 	fin.close();
 	if (is_gzip) gin.reset();

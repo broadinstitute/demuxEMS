@@ -21,6 +21,9 @@
 #ifndef DEMUXALGO_H_
 #define DEMUXALGO_H_
 
+#include <string>
+#include <vector>
+
 #include "SufficientStatistics.hpp"
 
 
@@ -33,9 +36,9 @@ public:
 		init_prob = 1.0 / nDonor;
 		for (int i = 0; i < nDonor; ++i) P[i] = init_prob;
 
-		theta = new double*[ss.ncells];
+		theta = new double*[ss.ncells + 1];
 		init_prob = 1.0 / (nDonor + 1);
-		for (int i = 0; i < ss.ncells; ++i) {
+		for (int i = 1; i <= ss.ncells; ++i) {
 			theta[i] = new double[nDonor + 1];
 			for (int j = 0; j <= nDonor; ++j) theta[i][j] = init_prob;
 		}
@@ -43,11 +46,17 @@ public:
 
 	~DemuxAlgo() {
 		delete[] P;
-		for (int i = 0; i < ss.ncells; ++i) delete[] theta[i];
+		for (int i = 1; i <= ss.ncells; ++i) delete[] theta[i];
 		delete[] theta;
 	}
 
-	void estimate_background();
+	void estimate_background(double tol = 1e-6);
+
+	void demultiplex(int thread_id, int fr, int to, double prior_noise, double prior_donor, double tol);
+
+	void demuxEMS(int num_threads, double prior_noise = 1.0, double prior_donor = 0.0, double tol = 1e-6);
+
+	void writeOutputs(std::string output_name, const std::vector<std::string>& donor_names);
 
 private:
 	int nDonor;

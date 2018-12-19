@@ -109,6 +109,8 @@ public:
 
 	int getNumDonor() const { return nDonor; }
 
+	const std::vector<std::string>& getDonorNames() const { return donor_names; }
+	
 	int getTotalSNP() const { return nsnp; }
 
 	void reOrderSNP(std::vector<std::string>& chrom_names);

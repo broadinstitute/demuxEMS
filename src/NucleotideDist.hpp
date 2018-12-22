@@ -75,12 +75,13 @@ typedef std::unordered_map<int, NucDist*> GenoID2NucDist;
 
 class NucleotideDist {
 public:
-	NucleotideDist(VCFLoader& vcf_loader, std::string barcode_tag = "CB", std::string umi_tag = "UB", int empty_upper_umi = 50) : vcf_loader(vcf_loader), barcode_tag(barcode_tag), umi_tag(umi_tag), empty_upper_umi(empty_upper_umi) {
+	NucleotideDist(VCFLoader& vcf_loader, int empty_upper_umi = 50, std::string barcode_tag = "CB", std::string umi_tag = "UB") : vcf_loader(vcf_loader), barcode_tag(barcode_tag), umi_tag(umi_tag), empty_upper_umi(empty_upper_umi) {
 		nsnp = vcf_loader.getTotalSNP();
 		snp_nucdist_vec = new NucDistMap*[nsnp];
 		memset(snp_nucdist_vec, 0, sizeof(NucDistMap*));
 		barcodexumi.clear();
 		empty_barcodes.clear();
+		printf("upper_umi = %d\n", empty_upper_umi);
 	}
 
 	~NucleotideDist() {

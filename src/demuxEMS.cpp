@@ -21,7 +21,7 @@ using namespace std;
 
 
 
-int num_threads;
+int num_threads, empty_upper_umi;
 double alpha, prior_noise, prior_donor, tol, threshold;
 
 htsThreadPool p = {NULL, 0};
@@ -37,11 +37,12 @@ DemuxAlgo *algo;
 
 int main(int argc, char* argv[]) {
 	if (argc < 5) {
-		printf("Usage: demuxEMS input.vcf.gz input.bam barcodes.tsv output_name [-p num_threads] [--alpha alpha] [--prior-noise prior_noise] [--prior-donor prior_donor] [--tol tol] [--threshold threshold]\n");
+		printf("Usage: demuxEMS input.vcf.gz input.bam barcodes.tsv output_name [-p num_threads] [--empty-upper-umi value] [--alpha alpha] [--prior-noise prior_noise] [--prior-donor prior_donor] [--tol tol] [--threshold threshold]\n");
 		exit(-1);
 	}
 
 	num_threads = 1;
+	empty_upper_umi = 50;
 	alpha = 0.05;
 	prior_noise = 1.0;
 	prior_donor = 0.0;
@@ -49,6 +50,7 @@ int main(int argc, char* argv[]) {
 	threshold = 0.1;
 	for (int i = 5; i < argc; ++i) {
 		if (!strcmp(argv[i], "-p")) num_threads = atoi(argv[i + 1]);
+		if (!strcmp(argv[i], "--empty-upper-umi")) empty_upper_umi = atoi(argv[i + 1]);
 		if (!strcmp(argv[i], "--alpha")) alpha = atof(argv[i + 1]);
 		if (!strcmp(argv[i], "--prior-noise")) prior_noise = atof(argv[i + 1]);
 		if (!strcmp(argv[i], "--prior-donor")) prior_donor = atof(argv[i + 1]);
@@ -81,7 +83,7 @@ int main(int argc, char* argv[]) {
 	vcf_loader.reset();
 
 	int cnt = 0, nalign = 0;
-	nd = new NucleotideDist(vcf_loader);
+	nd = new NucleotideDist(vcf_loader, empty_upper_umi);
 	while (ba.read(parser)) {
 		if (ba.isAligned() & 1) {
 			int ret = nd->collectData(ba);
@@ -103,7 +105,7 @@ int main(int argc, char* argv[]) {
 
 	algo = new DemuxAlgo(vcf_loader.getNumDonor(), ss, alpha);
 	algo->estimate_background();
-	algo->demuxEMS(num_threads);
+	algo->demuxEMS(num_threads, prior_noise, prior_donor, tol);
 	algo->writeOutputs(argv[4], vcf_loader.getDonorNames(), threshold);
 	delete algo;
 

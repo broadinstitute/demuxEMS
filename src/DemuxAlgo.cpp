@@ -55,6 +55,8 @@ void DemuxAlgo::estimate_background(double tol) {
 
 	int cnt = 0;
 
+	printf("alpha = %.5g\n", alpha);
+
 	do {
 		alpha_old = alpha;
 		memcpy(P_old, P, sizeof(double) * nDonor);
@@ -113,6 +115,8 @@ void DemuxAlgo::demultiplex(int thread_id, int fr, int to, double prior_noise, d
 	int s;
 	double epsilon, denom, obs_prob;
 	double *cond_prob, *theta_vec, *theta_vec_ec, *theta_vec_old;
+
+	printf("prior_noise = %.5g, prior_donor = %.5g\n", prior_noise, prior_donor);
 
 	cond_prob = new double[nDonor + 1];
 	theta_vec_ec = new double[nDonor + 1];
@@ -200,8 +204,12 @@ void DemuxAlgo::writeOutputs(std::string output_name, const std::vector<std::str
 	fout.setf(std::ios::scientific, std::ios::floatfield);
 	fout.precision(5);
 	fout<< alpha<< std::endl;
-	fout<< P[0];
-	for (int i = 1; i < nDonor; ++i) fout<< '\t'<< P[i];
+	nsnp = 0.0;
+	for (int j = 0; j < (int)ss.cellxnd[0].size(); ++j)
+		for (int k = 0; k < NucDist::size; ++k)
+			nsnp += ss.cellxnd[0][j].dist[k];
+	fout<< nsnp;
+	for (int k = 0; k < nDonor; ++k) fout<< '\t'<< P[k];
 	fout<< std::endl;
 	fout.close();
 
@@ -225,15 +233,18 @@ void DemuxAlgo::writeOutputs(std::string output_name, const std::vector<std::str
 			denom += theta[i][k];
 		}
 		for (int k = 0; k < nDonor; ++k) {
-			norm_Frac[k].donor_id = k;
+			norm_frac[k].donor_id = k;
 			norm_frac[k].frac = theta[i][k] / denom;
 		}
 		std::sort(norm_frac.begin(), norm_frac.end());
 		for (nassign = 0; nassign < nDonor; ++nassign)
-			if (norm_frac[nassign] < threshold) break;
+			if (norm_frac[nassign].frac < threshold) break;
 		assert(nassign > 0);
 		fout<< '\t'<< (nassign == 1 ? "singlet" : "doublet")<< '\t';
-		for (int k = 0; k < nassign; ++k) fout<< (k > 0 ? ',' : '')<< donor_names[norm_frac[k].donor_id];
+		for (int k = 0; k < nassign; ++k) {
+			if (k > 0) fout<< ',';
+			fout<< donor_names[norm_frac[k].donor_id];
+		}
 		fout<< std::endl;
 	}	
 

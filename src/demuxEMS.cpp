@@ -40,7 +40,7 @@ int main(int argc, char* argv[]) {
 		printf("Usage: demuxEMS input.vcf.gz input.bam barcodes.tsv output_name [-p num_threads] [--empty-upper-umi value] [--alpha alpha] [--prior-noise prior_noise] [--prior-donor prior_donor] [--tol tol] [--threshold threshold]\n");
 		exit(-1);
 	}
-
+	
 	num_threads = 1;
 	empty_upper_umi = 50;
 	alpha = 0.05;
@@ -68,19 +68,6 @@ int main(int argc, char* argv[]) {
 	for (int i = 0; i < header->n_targets; ++i)
 		chr_names.emplace_back(header->target_name[i]);
 	vcf_loader.reOrderSNP(chr_names);
-
-	while (vcf_loader.isValid()) {
-		const SNPType& snp = vcf_loader.getSNP();
-		for (int i = 0; i < vcf_loader.getNumDonor(); ++i) {
-			int geno = snp.getDonorGenotype(i);
-			if (geno < 0 || geno > 2) {
-				printf("snp_id = %d, tid = %d, pos = %d, donor_id = %d, geno = %d\n", vcf_loader.getSnpID(), vcf_loader.getTid(), vcf_loader.getPos(), i, geno);
-				exit(-1);
-			}
-		}
-		vcf_loader.next();
-	}
-	vcf_loader.reset();
 
 	int cnt = 0, nalign = 0;
 	nd = new NucleotideDist(vcf_loader, empty_upper_umi);

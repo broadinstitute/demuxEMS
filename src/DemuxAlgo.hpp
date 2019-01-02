@@ -23,6 +23,7 @@
 
 #include <string>
 #include <vector>
+#include <fstream>
 
 #include "SufficientStatistics.hpp"
 
@@ -55,6 +56,19 @@ public:
 		}
 	}
 
+	DemuxAlgo(std::string params_file, SufficientStatistics& ss) : nDonor(8), ss(ss) {
+		std::ifstream fin(params_file);
+		fin>> alpha;
+		P = new double[nDonor];
+		fin>> P[0];
+		for (int i = 0; i < nDonor; ++i) fin>> P[i];
+		theta = new double*[2];
+		double init_prob = 1.0 / (nDonor + 1);
+		theta[1] = new double[nDonor + 1];
+		for (int j = 0; j <= nDonor; ++j) theta[1][j] = init_prob;
+		fin.close();
+	}
+
 	~DemuxAlgo() {
 		delete[] P;
 		for (int i = 1; i <= ss.ncells; ++i) delete[] theta[i];
@@ -62,6 +76,8 @@ public:
 	}
 
 	void estimate_background(double tol = 1e-6);
+
+	double loglikelihood(int cell_id, double* theta_vec);
 
 	void demultiplex(int thread_id, int fr, int to, double prior_noise, double prior_donor, double tol);
 

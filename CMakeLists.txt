@@ -3,7 +3,7 @@ project(demuxEMS CXX)
 
 add_compile_options(-std=c++11)
 
-find_package(Boost 1.61.0 REQUIRED COMPONENTS iostreams)
+find_package(Boost 1.67.0 REQUIRED COMPONENTS iostreams)
 if (NOT Boost_FOUND OR NOT Boost_IOSTREAMS_FOUND)
 	message(FATAL_ERROR "Boost is not found. The iostreams library is required.")
 endif()

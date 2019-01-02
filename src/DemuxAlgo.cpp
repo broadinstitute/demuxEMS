@@ -109,14 +109,32 @@ void DemuxAlgo::estimate_background(double tol) {
 	printf("Background estimated. Total iteration %d, alpha = %.5g, P =", cnt, alpha);
 	for (int k = 0; k < nDonor; ++k) printf(" %.5g", P[k]);
 	printf("\n");
+}	
+
+double DemuxAlgo::loglikelihood(int cell_id, double* theta_vec) {
+	std::vector<int>& genovec = ss.cellxgeno[cell_id];
+	std::vector<NucDist>& ndvec = ss.cellxnd[cell_id];
+	int s = ndvec.size();
+	double loglik = 0.0;
+
+	for (int i = 0; i < s; ++i) {
+		const SNPType* snp = ss.diff_genos[genovec[i]];
+		for (int j = 0; j < NucDist::size; ++j) {
+			double sum = 0.0;
+			for (int k = 0; k < nDonor; ++k) {
+				sum += (theta_vec[nDonor] * P[k] + theta_vec[k]) * getObsProb(geno_allele_to_prob[snp->getDonorGenotype(k)][j]);
+			}
+			loglik += ndvec[i].dist[j] * log(sum);
+		}
+	}
+
+	return loglik;
 }
 
 void DemuxAlgo::demultiplex(int thread_id, int fr, int to, double prior_noise, double prior_donor, double tol) {
 	int s;
 	double epsilon, denom, obs_prob;
 	double *cond_prob, *theta_vec, *theta_vec_ec, *theta_vec_old;
-
-	printf("prior_noise = %.5g, prior_donor = %.5g\n", prior_noise, prior_donor);
 
 	cond_prob = new double[nDonor + 1];
 	theta_vec_ec = new double[nDonor + 1];
@@ -127,6 +145,10 @@ void DemuxAlgo::demultiplex(int thread_id, int fr, int to, double prior_noise, d
 		std::vector<NucDist>& ndvec = ss.cellxnd[cell_id];
 		s = ndvec.size();
 		theta_vec = theta[cell_id];
+
+		int cnt = 0;
+		printf("cnt = %d, epsilon = %.6g, loglikelihood = %.6g\n", cnt, 1e6, loglikelihood(cell_id, theta_vec));	
+		for (int k = 0; k <= nDonor; ++k) printf("%.5g\t", theta_vec[k]); printf("\n");
 
 		do {
 			memcpy(theta_vec_old, theta_vec, sizeof(double) * (nDonor + 1));
@@ -166,7 +188,17 @@ void DemuxAlgo::demultiplex(int thread_id, int fr, int to, double prior_noise, d
 			epsilon = 0.0;
 			for (int k = 0; k <= nDonor; ++k) epsilon += fabs(theta_vec[k] - theta_vec_old[k]);
 
+			++cnt;
+			printf("cnt = %d, epsilon = %.6g, loglikelihood = %.10g\n", cnt, epsilon, loglikelihood(cell_id, theta_vec));	
+			for (int k = 0; k <= nDonor; ++k) printf("%.5g\t", theta_vec[k]); printf("\n");
+
 		} while (epsilon > tol);
+
+		for (int i = 0; i <= nDonor; ++i) theta_vec[i] = 0.0;
+		theta_vec[0] = 0.041173; theta_vec[3] = 0.958827;
+		printf("Try.\n");
+		printf("cnt = %d, epsilon = %.6g, loglikelihood = %.10g\n", cnt, epsilon, loglikelihood(cell_id, theta_vec));	
+		for (int k = 0; k <= nDonor; ++k) printf("%.5g\t", theta_vec[k]); printf("\n");	
 	}
 
 	delete[] cond_prob;
@@ -216,11 +248,11 @@ void DemuxAlgo::writeOutputs(std::string output_name, const std::vector<std::str
 	fout.open(output_name + ".results");
 	fout.setf(std::ios::scientific, std::ios::floatfield);
 	fout.precision(5);
-	fout<< "BARCODE\tNSNP\tAMBIENT";
+	fout<< "BARCODE\tNGENO\tNSNP\tAMBIENT";
 	for (int i = 0; i < nDonor; ++i) fout<< '\t'<< donor_names[i];
 	fout<< "\tDEMUX_TYPE\tASSIGNMENT"<< std::endl;
 	for (int i = 1; i <= ss.ncells; ++i) {
-		fout<< ss.cell_barcodes[i];
+		fout<< ss.cell_barcodes[i]<< '\t'<< ss.cellxnd[i].size();
 		nsnp = 0.0;
 		for (int j = 0; j < (int)ss.cellxnd[i].size(); ++j)
 			for (int k = 0; k < NucDist::size; ++k)
@@ -247,6 +279,22 @@ void DemuxAlgo::writeOutputs(std::string output_name, const std::vector<std::str
 		}
 		fout<< std::endl;
 	}	
+	fout.close();
+
+	fout.open(output_name + ".details.txt");
+	for (int i = 1; i <= ss.ncells; ++i) {
+		fout<< ss.cell_barcodes[i]<< '\t'<< ss.cellxnd[i].size()<< std::endl;
+		for (int j = 0; j < (int)ss.cellxnd[i].size(); ++j) {
+			fout<< j<< "\t(";
+			for (int k = 0; k < NucDist::size; ++k) fout<< '\t'<< ss.cellxnd[i][j].dist[k];
+			fout<< ")\t(";
+			const SNPType* snp = ss.diff_genos[ss.cellxgeno[i][j]];
+			for (int k = 0; k < nDonor; ++k) fout<< '\t'<< snp->getDonorGenotype(k);
+			fout<< ")"<< std::endl;
+		}
+		fout<< std::endl<< std::endl;
+	}
+	fout.close();
 
 	printf("DemuxAlgo::writeOutputs is finished.\n");
 }

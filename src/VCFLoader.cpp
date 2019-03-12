@@ -178,15 +178,17 @@ void VCFLoader::loadVCF(std::string input_vcf_file) {
 	if (is_gzip) gin.reset();
 }
 
-void VCFLoader::reOrderSNP(std::vector<std::string>& chrom_names) {
+void VCFLoader::reOrderSNP(std::vector<std::string>& reorder_names) {
 	chrom_ids.clear();
+	chrom_names.clear();
 	chrom_snps.clear();
 
 	int tid = 0;
-	for (auto&& chrom_name : chrom_names) {
+	for (auto&& chrom_name : reorder_names) {
 		auto iter = snpMap.find(chrom_name);
 		if (iter != snpMap.end()) {
 			chrom_ids.push_back(tid);
+			chrom_names.push_back(chrom_name);
 			chrom_snps.push_back(&(iter->second));
 		}
 		++tid;

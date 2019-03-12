@@ -33,12 +33,14 @@ struct NucDist {
 	static const int A = 1; // Alt
 	static const int O = 2; // Other
 
-	double dist[size]; // 0, Ref; 1, Alt; 2, Other.
+	float dist[size]; // 0, Ref; 1, Alt; 2, Other.
 
-	NucDist() { memset(dist, 0, sizeof(dist)); }
+	NucDist() { clear(); }
+
+	void clear() { memset(dist, 0, sizeof(dist)); }
 
 	void normalize() {
-		double denom = 0.0;
+		float denom = 0.0;
 		for (int i = 0; i < size; ++i) denom += dist[i];
 		for (int i = 0; i < size; ++i) dist[i] /= denom;
 	}
@@ -48,7 +50,17 @@ struct NucDist {
 	}
 
 	void copy(const NucDist& o) {
-		for (int i = 0; i < size; ++i) dist[i] = o.dist[i];
+		memcpy(dist, o.dist, sizeof(o.dist));
+	}
+
+	int max() const {
+		int res = 0;
+		float value = dist[0];
+
+		for (int i = 1; i < size; ++i)
+			if (value < dist[i]) value = dist[i], res = i;
+
+		return res;
 	}
 };
 

@@ -65,7 +65,7 @@ public:
 	char getRef() const { return ref; }
 	char getAlt() const { return alt; }
 	int getDonorGenotype(int donor) const;
-	
+
 	const uint64_t* getGenotypeVec() const { return genotypes; }
 
 	void setPos(int pos) { this->pos = pos; }
@@ -113,7 +113,7 @@ public:
 	
 	int getTotalSNP() const { return nsnp; }
 
-	void reOrderSNP(std::vector<std::string>& chrom_names);
+	void reOrderSNP(const std::vector<std::string>& reorder_names);
 
 	void reset() {
 		cur_chr = cur_vecp = snp_id = cur_chr_copy = cur_vecp_copy = snp_id_copy = 0;
@@ -132,16 +132,35 @@ public:
 	}
 
 	bool isValid() const { 
-		// return cur_chr < nchr && cur_vecp < (int)chrom_snps[cur_chr]->size();
 		return snp_id < nsnp;
 	}
 
-	int getTid() const { 
+	int getTid() const {
 		return chrom_ids[cur_chr];
+	}
+
+	std::string getChromName() const {
+		return chrom_names[cur_chr];
 	}
 
 	int getPos() const {
 		return chrom_snps[cur_chr]->at(cur_vecp).getPos();
+	}
+
+	char getRef() const {
+		return chrom_snps[cur_chr]->at(cur_vecp).getRef();	
+	}
+
+	char getAlt() const {
+		return chrom_snps[cur_chr]->at(cur_vecp).getAlt();	
+	}
+
+	std::string getDonorGenotype(int donor) const {
+	switch(chrom_snps[cur_chr]->at(cur_vecp).getDonorGenotype(donor)) {
+		case 0: return "0/0";
+		case 1: return "0/1";
+		case 2: return "1/1";
+		default: assert(false);
 	}
 
 	const SNPType& getSNP() const {
@@ -161,6 +180,23 @@ public:
 		++snp_id;
 	}
 
+	void locate(int target_snp_id) {
+		assert(snp_id <= target_snp_id && target_snp_id < nsnp);
+		
+		int snp_size;
+
+		snp_size = chrom_snps[cur_chr]->size();
+		while (snp_id + (snp_size - cur_vecp) <= target_snp_id) {
+			snp_id += snp_size - cur_vecp;
+			++cur_chr;
+			cur_vecp = 0;
+			snp_size = chrom_snps[cur_chr]->size();
+		}
+
+		cur_vecp += target_snp_id - snp_id;
+		snp_id = target_snp_id;
+	}
+
 private:
 	int nDonor;
 	int nsnp;
@@ -169,6 +205,7 @@ private:
 
 	int nchr; // number of chromosomes that are in the BAM header and also have SNPs.
 	std::vector<int> chrom_ids;
+	std::vector<std::string> chrom_names;
 	std::vector<SNPVecType*> chrom_snps;
 
 	int cur_chr, cur_vecp, snp_id; // current position in chrom_snps (cur_chr) and current position in chrom_snps[cur_chr]

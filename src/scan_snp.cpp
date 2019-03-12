@@ -36,6 +36,7 @@ int main(int argc, char* argv[]) {
 		assert(!strcmp(argv[4], "-p"));
 		num_threads = atoi(argv[5]);
 	}
+
 	vcf_loader.loadVCF(argv[1]);
 
 	// num_threads = 4;

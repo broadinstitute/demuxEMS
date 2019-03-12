@@ -66,6 +66,7 @@ int DataCollector::collectData(BamAlignment& ba) {
 	if (!ba.findTag(umi_tag.c_str(), tag_p2, tag_type)) return 2;
 	assert(tag_type == 'Z');
 
+	if (barcode_len < 0) barcode_len = strlen(ba.tag2Z(tag_p1));
 	barcode = barcode_to_binary(ba.tag2Z(tag_p1));
 	umi = barcode_to_binary(ba.tag2Z(tag_p2));
 
@@ -109,7 +110,7 @@ int DataCollector::collectData(BamAlignment& ba) {
 						if (snp_nucdist_vec[snp_id] == nullptr) {
 							snp_nucdist_vec[snp_id] = new NucDistMap();
 						}
-						auto result = snp_nucdist_vec[snp_id]->insert(insert_pair);
+						auto result = snp_nucdist_vec[snp_id]->insert(insert_pair_bu2n);
 
 						p_err = pow(10.0, -qi.qualAt(snp_rpos) / 10.0);
 						p_crt = 1.0 - p_err;
@@ -165,7 +166,7 @@ void DataCollector::outputDataMatrix(const std::string& output_name) {
 
 	fout.open(output_name + ".barcodes.tsv");
 	for (auto&& value : barcodes) {
-		fout<< binary_to_barcode(value)<< std::endl;
+		fout<< binary_to_barcode(value, barcode_len)<< std::endl;
 	}
 	fout.close();
 
@@ -177,8 +178,8 @@ void DataCollector::outputDataMatrix(const std::string& output_name) {
 
 	fout.open(output_name + ".snps.tsv");
 
-	fout << "CHROM\tPOS\tREF\tALT"
-	for (int i = 1; i <= ndonor; ++i) fout<< "\tDonor"<< i;
+	fout << "CHROM\tPOS\tREF\tALT";
+	for (auto&& name : vcf_loader.getDonorNames()) fout<< '\t'<< name;
 	fout<< std::endl;
 
 	for (auto&& snp_id : snpid_vec) {
@@ -189,7 +190,7 @@ void DataCollector::outputDataMatrix(const std::string& output_name) {
 	}
 	fout.close();
 
-	print("SNP TSV file is generated.\n");
+	printf("SNP TSV file is generated.\n");
 
 	fouts[0].open(output_name + ".matrix.ref.mtx");
 	fouts[1].open(output_name + ".matrix.alt.mtx");
@@ -202,16 +203,16 @@ void DataCollector::outputDataMatrix(const std::string& output_name) {
 	}
 
 	for (int i = 0; i < M; ++i) {
-		const SNP2NucDist& s2n = data_matrix[barcodes[i]];
+		const SNP2NucDist& s2n = data_matrix.at(barcodes[i]);
 		snps.clear();
 		for (auto&& kv : s2n) 
 			snps.push_back(kv.first);
 		std::sort(snps.begin(), snps.end());
 		int s = snps.size();
 		for (int j = 0; j < s; ++j) {
-			const NucDistVec& ndv = s2n[snps[j]];
+			const NucDistVec& ndv = s2n.at(snps[j]);
 			memset(numi, 0, sizeof(numi));
-			for (auto&& nd : ndv) ++numi[nd.max()];
+			for (auto&& nd : ndv) ++numi[nd.getMostLikelyNuc()];
 			for (int k = 0; k < 3; ++k)
 				if (numi[k] > 0) {
 					fouts[k]<< i + 1<< ' '<< j + 1<< ' '<< numi[k]<< std::endl;

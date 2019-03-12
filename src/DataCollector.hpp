@@ -88,16 +88,16 @@ typedef std::unordered_map<uint64_t, SNP2NucDist> Barcode2SNP;
 
 class DataCollector {
 public:
-	DataCollector(VCFLoader& vcf_loader, int empty_upper_umi = 50, std::string barcode_tag = "CB", std::string umi_tag = "UB") : vcf_loader(vcf_loader), barcode_tag(barcode_tag), umi_tag(umi_tag), empty_upper_umi(empty_upper_umi) {
+	DataCollector(VCFLoader& vcf_loader, std::string barcode_tag = "CB", std::string umi_tag = "UB") : vcf_loader(vcf_loader), barcode_tag(barcode_tag), umi_tag(umi_tag) {
+		barcode_len = -1;
+
 		max_snpid = 0;
 		snp_nucdist_vec = new NucDistMap*[vcf_loader.getTotalSNP()];
 		memset(snp_nucdist_vec, 0, sizeof(NucDistMap*));
 		
 		nobs = 0;
 		snpid_vec.clear();
-
 		data_matrix.clear();
-
 
 		insert_pair_bu2n.second.clear();
 		insert_pair_b2s.second.clear();
@@ -122,7 +122,7 @@ public:
 		}
 	}
 
-	void outputDataMatrix();
+	void outputDataMatrix(const std::string& output_name);
 
 	// void collectEmptyBarcodes();
 
@@ -133,6 +133,7 @@ public:
 private:
 	VCFLoader& vcf_loader;
 	std::string barcode_tag, umi_tag;
+	int barcode_len;
 
 	int max_snpid; // max_snpid, max_snpid - 1 is the maximum snpID ever explored.
 	NucDistMap** snp_nucdist_vec;

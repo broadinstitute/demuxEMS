@@ -1,8 +1,10 @@
 include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${HTSLIB_INCLUDE_DIRS})
 
+message(STATUS, ${Boost_IOSTREAMS_LIBRARY})
+
 file(GLOB sources BamAlignment.cpp DataCollector.cpp SEQstring.cpp SamParser.cpp BamWriter.cpp SamHeaderText.cpp VCFLoader.cpp)
-file(GLOB headers BamAlignment.hpp BarcodeUtils.hpp DataCollector.hpp QUALstring.hpp SamHeaderText.hpp SufficientStatistics.hpp BamWriter.hpp CIGARstring.hpp	MDstring.hpp SEQstring.hpp SamParser.hpp VCFLoader.hpp)
+file(GLOB headers BamAlignment.hpp BarcodeUtils.hpp DataCollector.hpp QUALstring.hpp SamHeaderText.hpp SufficientStatistics.hpp BamWriter.hpp CIGARstring.hpp MDstring.hpp SEQstring.hpp SamParser.hpp VCFLoader.hpp)
 
 add_compile_options(-Wall -O3 -ffast-math)
 add_library(demuxEMS_core ${sources} ${headers})

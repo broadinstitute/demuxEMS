@@ -147,8 +147,8 @@ void DemuxAlgo::demultiplex(int thread_id, int fr, int to, double prior_noise, d
 		theta_vec = theta[cell_id];
 
 		int cnt = 0;
-		printf("cnt = %d, epsilon = %.6g, loglikelihood = %.6g\n", cnt, 1e6, loglikelihood(cell_id, theta_vec));	
-		for (int k = 0; k <= nDonor; ++k) printf("%.5g\t", theta_vec[k]); printf("\n");
+		// printf("cnt = %d, epsilon = %.6g, loglikelihood = %.6g\n", cnt, 1e6, loglikelihood(cell_id, theta_vec));	
+		// for (int k = 0; k <= nDonor; ++k) printf("%.5g\t", theta_vec[k]); printf("\n");
 
 		do {
 			memcpy(theta_vec_old, theta_vec, sizeof(double) * (nDonor + 1));
@@ -189,16 +189,16 @@ void DemuxAlgo::demultiplex(int thread_id, int fr, int to, double prior_noise, d
 			for (int k = 0; k <= nDonor; ++k) epsilon += fabs(theta_vec[k] - theta_vec_old[k]);
 
 			++cnt;
-			printf("cnt = %d, epsilon = %.6g, loglikelihood = %.10g\n", cnt, epsilon, loglikelihood(cell_id, theta_vec));	
-			for (int k = 0; k <= nDonor; ++k) printf("%.5g\t", theta_vec[k]); printf("\n");
+			// printf("cnt = %d, epsilon = %.6g, loglikelihood = %.10g\n", cnt, epsilon, loglikelihood(cell_id, theta_vec));	
+			// for (int k = 0; k <= nDonor; ++k) printf("%.5g\t", theta_vec[k]); printf("\n");
 
 		} while (epsilon > tol);
 
-		for (int i = 0; i <= nDonor; ++i) theta_vec[i] = 0.0;
-		theta_vec[0] = 0.041173; theta_vec[3] = 0.958827;
-		printf("Try.\n");
-		printf("cnt = %d, epsilon = %.6g, loglikelihood = %.10g\n", cnt, epsilon, loglikelihood(cell_id, theta_vec));	
-		for (int k = 0; k <= nDonor; ++k) printf("%.5g\t", theta_vec[k]); printf("\n");	
+		// for (int i = 0; i <= nDonor; ++i) theta_vec[i] = 0.0;
+		// theta_vec[0] = 0.041173; theta_vec[3] = 0.958827;
+		// printf("Try.\n");
+		// printf("cnt = %d, epsilon = %.6g, loglikelihood = %.10g\n", cnt, epsilon, loglikelihood(cell_id, theta_vec));	
+		// for (int k = 0; k <= nDonor; ++k) printf("%.5g\t", theta_vec[k]); printf("\n");	
 	}
 
 	delete[] cond_prob;

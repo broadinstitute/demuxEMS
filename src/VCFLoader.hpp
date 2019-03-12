@@ -105,7 +105,7 @@ public:
 		nDonor = nsnp = nchr = cur_chr = cur_vecp = snp_id = cur_chr_copy = cur_vecp_copy = snp_id_copy = 0;
 	}
 
-	void loadVCF(std::string input_vcf_file);
+	void loadVCF(const std::string& input_vcf_file);
 
 	int getNumDonor() const { return nDonor; }
 
@@ -156,11 +156,12 @@ public:
 	}
 
 	std::string getDonorGenotype(int donor) const {
-	switch(chrom_snps[cur_chr]->at(cur_vecp).getDonorGenotype(donor)) {
-		case 0: return "0/0";
-		case 1: return "0/1";
-		case 2: return "1/1";
-		default: assert(false);
+		switch(chrom_snps[cur_chr]->at(cur_vecp).getDonorGenotype(donor)) {
+			case 0: return "0/0";
+			case 1: return "0/1";
+			case 2: return "1/1";
+			default: assert(false);
+		}
 	}
 
 	const SNPType& getSNP() const {

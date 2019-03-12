@@ -53,7 +53,7 @@ struct NucDist {
 		memcpy(dist, o.dist, sizeof(o.dist));
 	}
 
-	int max() const {
+	int getMostLikelyNuc() const {
 		int res = 0;
 		float value = dist[0];
 

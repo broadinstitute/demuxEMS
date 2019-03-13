@@ -79,7 +79,7 @@ uint64_t barcode_to_binary(const std::string& barcode) {
 
 std::string binary_to_barcode(uint64_t binary_id, int len) {
 	std::string barcode(len, 0);
-	for (int i = 0; i < len; ++i) {
+	for (int i = len - 1; i >= 0; --i) {
 		barcode[i] = id2base[binary_id & BASE];
 		binary_id >>= STEP;
 	}

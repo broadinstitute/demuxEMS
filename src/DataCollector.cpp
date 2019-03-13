@@ -66,8 +66,10 @@ int DataCollector::collectData(BamAlignment& ba) {
 	if (!ba.findTag(umi_tag.c_str(), tag_p2, tag_type)) return 2;
 	assert(tag_type == 'Z');
 
-	if (barcode_len < 0) barcode_len = strlen(ba.tag2Z(tag_p1));
-	barcode = barcode_to_binary(ba.tag2Z(tag_p1));
+	char *cbstr = ba.tag2Z(tag_p1);
+	if (barcode_len < 0) barcode_len = strlen(cbstr) - 2;
+	cbstr[barcode_len] = 0;
+	barcode = barcode_to_binary(cbstr);
 	umi = barcode_to_binary(ba.tag2Z(tag_p2));
 
 	insert_pair_bu2n.first.barcode = barcode;
@@ -215,7 +217,7 @@ void DataCollector::outputDataMatrix(const std::string& output_name) {
 			for (auto&& nd : ndv) ++numi[nd.getMostLikelyNuc()];
 			for (int k = 0; k < 3; ++k)
 				if (numi[k] > 0) {
-					fouts[k]<< i + 1<< ' '<< j + 1<< ' '<< numi[k]<< std::endl;
+					fouts[k]<< i + 1<< ' '<< snps[j] + 1<< ' '<< numi[k]<< std::endl;
 					++L[k];
 				}
 		}

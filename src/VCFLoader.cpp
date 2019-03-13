@@ -72,22 +72,15 @@ void VCFLoader::loadVCF(const std::string& input_vcf_file) {
 
 	bool is_gzip = input_vcf_file.substr(input_vcf_file.length() - 3, 3) == ".gz";
 
-
 	if (is_gzip) {
 		fin.open(input_vcf_file, std::ios_base::in | std::ios_base::binary);
-		printf("haha\n");
 		gin.push(boost::iostreams::gzip_decompressor());
-		printf("lala\n");
 		gin.push(fin);
-		printf("gaga\n");
 	} 
 	else {
 		fin.open(input_vcf_file);
 		gin.push(fin);
 	}
-
-	printf("is_gzip = %d\n", is_gzip);
-	exit(-1);
 
 
 	while (std::getline(gin, line) && line[0] == '#' && line[1] == '#');

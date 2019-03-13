@@ -1,6 +1,6 @@
-# demuxEMS
+# scan_snp
 
-Demultiplexing and ambient RNA estimation based on SNPs.
+Generate cell barcode by SNP matrices.
 
 Bo Li.
 
@@ -10,22 +10,64 @@ Table of Contents
 -----------------
 
 * [Introduction](#introduction)
+	* [Request RedHat7 Server](#server)
+	* [Install conda](#conda)
 * [Installation](#install)
 * [Usage](#usage)
 * [Example](#example)
-* [Authors](#authors)
-* [Acknowledgements](#acknowledgements)
-* [License](#license)
 
 * * *
 
 ## <a name="introduction"></a> Introduction
 
-PROBer is a software to quantify chemical modification profiles for a general set of sequencing-based 'toeprinting' assays.
+scan_snp generates cell barcode by SNP matrices from cellranger outputs.
 
 ## <a name="install"></a> Installation
 
-See INSTALL.md
+First, you need to request a RedHat7 Server.
+
+### <a name="server"></a> Request a RedHat7 Server
+
+```
+qrsh -q interactive -l h_vmem=4g -l os=RedHat7 -P regevlab
+```
+
+or 
+
+```
+qrsh -q interactive -l h_vmem=4g -l -pe smp 4 -binding linear:4 os=RedHat7 -P regevlab 
+```
+
+to request multiple threads.
+
+### <a name="conda"></a> Install conda environment
+
+This installation instruction has been tested on Ubuntu Linux 18.04.
+
+Suppose your Linux user directory is /users/foo. We will create two folders /users/foo/miniconda3 and /users/foo/software.
+
+Please use the commands below to install scCloud locally via Miniconda:
+
+```
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh .
+bash Miniconda3-latest-Linux-x86_64.sh -p /users/foo/miniconda3
+mv Miniconda3-latest-Linux-x86_64.sh /users/foo/miniconda3
+source ~/.bashrc
+conda install -y -c anaconda gcc // install a new version of gcc to use c++11 features 
+conda install -y -c anaconda libgcc // install a new version of libgcc
+conda install -y -c anaconda libstdcxx-ng // update stdlibc++ symbols
+conda install -y -c anaconda cmake // install cmake
+conda install -y -c bioconda htslib // install htslib
+conda install -y -c anaconda boost // install boost library
+```
+
+### <a name="compile"></a> Compile scan_snp
+
+```
+
+```
+
+
 
 ## <a name="usage"></a> Usage
 

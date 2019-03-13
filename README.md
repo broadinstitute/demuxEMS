@@ -10,11 +10,15 @@ Table of Contents
 -----------------
 
 * [Introduction](#introduction)
-	* [Request RedHat7 Server](#server)
-	* [Install conda](#conda)
 * [Installation](#install)
+	* [Request RedHat7 Server](#server)
+	* [Direct use scan_snp](#direct)
+	* [Install conda](#conda)
+	* [Compile scan_snp](#compile)
 * [Usage](#usage)
-* [Example](#example)
+	* [Inputs](#inputs)
+	* [Outputs](#outputs)
+	* [Example](#example)
 
 * * *
 
@@ -87,7 +91,7 @@ You should be able to find the executable as ``/users/foo/software/scan_snps/bui
 Usage: scan_snp input.vcf.gz input.bam output_name [-p number_of_threads]
 ```
 
-### Inputs
+### ### <a name="inputs"></a> Inputs
 
 input.vcf.gz: VCF files contained SNPs. Only SNPs with 'PASS' field will be kept.
 input.bam: 10x genomics sorted bam file.
@@ -97,7 +101,7 @@ output_name: output file name prefix.
 
 -p number_of_threads:     Set number of threads used for parsing the BAM file.
 
-### Outputs
+### <a name="outputs"></a> Outputs
 
 output_name.barcodes.tsv:      List all cell barcodes with at least 1 SNP.
 output_name.snps.tsv:          List all SNPs appeared in at least one read.
@@ -105,7 +109,7 @@ output_name.matrix.ref.mtx:    Market format matrix, barcode by number of SNP. C
 output_name.matrix.alt.mtx:    Market format matrix, barcode by number of SNP. Counts are the UMIs for the alternative allele.
 output_name.matrix.ref.mtx:    Market format matrix, barcode by number of SNP. Counts are the UMIs for errors, the nucleotides that match neither reference nor alternative allele.
 
-### Example:
+### <a name="example"></a> Example:
 
 ```
 /users/foo/software/scan_snps/build/src/scan_snp MantonBL_demuxlet.vcf.gz possorted_genome_bam.bam test -p 4

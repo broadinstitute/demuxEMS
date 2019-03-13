@@ -91,7 +91,7 @@ You should be able to find the executable as ``/users/foo/software/scan_snps/bui
 Usage: scan_snp input.vcf.gz input.bam output_name [-p number_of_threads]
 ```
 
-### ### <a name="inputs"></a> Inputs
+### <a name="inputs"></a> Inputs
 
 input.vcf.gz: VCF files contained SNPs. Only SNPs with 'PASS' field will be kept.
 input.bam: 10x genomics sorted bam file.

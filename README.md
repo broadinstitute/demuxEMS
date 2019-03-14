@@ -47,7 +47,6 @@ to request multiple threads.
 ### <a name="direct"></a> Direct use scan_snp
 
 ```
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/ahg/regevdata/users/libo/miniconda3/lib
 /ahg/regevdata/users/libo/software/scan_snps/scan_snp
 ```
 

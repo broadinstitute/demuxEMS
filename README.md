@@ -39,7 +39,7 @@ qrsh -q interactive -l h_vmem=4g -l os=RedHat7 -P regevlab
 or 
 
 ```
-qrsh -q interactive -l h_vmem=4g -l -pe smp 4 -binding linear:4 os=RedHat7 -P regevlab 
+qrsh -q interactive -l h_vmem=4g -l os=RedHat7 -pe smp 4 -binding linear:4 -P regevlab 
 ```
 
 to request multiple threads.
@@ -92,21 +92,27 @@ Usage: scan_snp input.vcf.gz input.bam output_name [-p number_of_threads]
 
 ### <a name="inputs"></a> Inputs
 
-input.vcf.gz: VCF files contained SNPs. Only SNPs with 'PASS' field will be kept.
-input.bam: 10x genomics sorted bam file.
-output_name: output file name prefix. 
+File | Description
+-----|------------
+input.vcf.gz | VCF files contained SNPs. Only SNPs with 'PASS' field will be kept.
+input.bam | 10x genomics sorted bam file.
+output_name | output file name prefix. 
 
 ### Options
 
--p number_of_threads:     Set number of threads used for parsing the BAM file.
+Option | Description
+-------|------------
+-p number_of_threads | Set number of threads used for parsing the BAM file.
 
 ### <a name="outputs"></a> Outputs
 
-output_name.barcodes.tsv:      List all cell barcodes with at least 1 SNP.
-output_name.snps.tsv:          List all SNPs appeared in at least one read.
-output_name.matrix.ref.mtx:    Market format matrix, barcode by number of SNP. Counts are the UMIs for the reference allele.
-output_name.matrix.alt.mtx:    Market format matrix, barcode by number of SNP. Counts are the UMIs for the alternative allele.
-output_name.matrix.ref.mtx:    Market format matrix, barcode by number of SNP. Counts are the UMIs for errors, the nucleotides that match neither reference nor alternative allele.
+File | Description
+-----|------------
+output_name.barcodes.tsv | List all cell barcodes with at least 1 SNP.
+output_name.snps.tsv | List all SNPs appeared in at least one read.
+output_name.matrix.ref.mtx | Market format matrix, barcode by number of SNP. Counts are the UMIs for the reference allele.
+output_name.matrix.alt.mtx | Market format matrix, barcode by number of SNP. Counts are the UMIs for the alternative allele.
+output_name.matrix.ref.mtx | Market format matrix, barcode by number of SNP. Counts are the UMIs for errors, the nucleotides that match neither reference nor alternative allele.
 
 ### <a name="example"></a> Example:
 

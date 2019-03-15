@@ -29,7 +29,7 @@
 
 class SNPType {
 public:
-	SNPType(int pos, char ref, char alt) : pos(pos), ref(ref), alt(alt), genotypes(nullptr) {
+	SNPType(int pos, const std::string& ID, char ref, char alt) : pos(pos), ID(ID), ref(ref), alt(alt), genotypes(nullptr) {
 	}
 
 	SNPType(SNPType&& o) noexcept {
@@ -55,6 +55,7 @@ public:
 
 	void moveFrom(SNPType&& o) {
 		pos = o.pos;
+		ID = std::move(o.ID);
 		ref = o.ref;
 		alt = o.alt;
 		genotypes = o.genotypes;
@@ -62,6 +63,7 @@ public:
 	}
 
 	int getPos() const { return pos; }
+	const std::string& getID() const { return ID; }
 	char getRef() const { return ref; }
 	char getAlt() const { return alt; }
 	int getDonorGenotype(int donor) const;
@@ -69,6 +71,7 @@ public:
 	const uint64_t* getGenotypeVec() const { return genotypes; }
 
 	void setPos(int pos) { this->pos = pos; }
+	void setID(const std::string& ID) { this->ID = ID; }
 	void setRef(char ref) { this->ref = ref; }
 	void setAlt(char alt) { this->alt = alt; }
 	void setDonorGenotype(int donor, std::string genotype);
@@ -85,6 +88,7 @@ public:
 
 private:
 	int pos; // chromosome position, 0-based
+	std::string ID; // SNP identifier
 	char ref, alt; // reference allele and alternative allele
 	uint64_t* genotypes; // genotypes for each donor, 0: R/R; 1: R/A; 2: A/A; 3: unknown
 
@@ -145,6 +149,10 @@ public:
 
 	int getPos() const {
 		return chrom_snps[cur_chr]->at(cur_vecp).getPos();
+	}
+
+	const std::string& getID() const {
+		return chrom_snps[cur_chr]->at(cur_vecp).getID();
 	}
 
 	char getRef() const {

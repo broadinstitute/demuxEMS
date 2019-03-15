@@ -68,7 +68,7 @@ uint64_t barcode_to_binary(const std::string& barcode) {
 	char c;
 
 	assert(barcode.length() <= UPPER);
-	for (auto&& it = barcode.rbegin(); it != barcode.rend(); ++it) {
+	for (auto&& it = barcode.begin(); it != barcode.end(); ++it) {
 		c = *it;
 		assert(base2id[c] >= 0);
 		binary_id <<= STEP;

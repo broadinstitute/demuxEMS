@@ -333,6 +333,14 @@ public:
 		setMapQ(frac2MapQ(frac));
 	}
 
+	bool is_secondary() const {
+		return bam_is_secondary(b);
+	}
+
+	bool is_pcrdup() const {
+		return bam_is_pcrdup(b);
+	}
+
 private:
 	static const uint8_t rnt_table[16];
 	static const std::vector<char> base2rbase;
@@ -351,6 +359,8 @@ private:
 	bool bam_is_unmapped(const bam1_t* b) const { return (b->core.flag & BAM_FUNMAP); }
 	bool bam_is_read1(const bam1_t* b) const { return (b->core.flag & BAM_FREAD1); }
 	bool bam_is_read2(const bam1_t* b) const { return (b->core.flag & BAM_FREAD2); }
+	bool bam_is_secondary(const bam1_t* b) const { return (b->core.flag & BAM_FSECONDARY); }
+	bool bam_is_pcrdup(const bam1_t* b) const { return (b->core.flag & BAM_FDUP); }
 	
 	int bam_aux_type2size(char x, const uint8_t* p = NULL) {
 		if (x == 'C' || x == 'c' || x == 'A') return 1;

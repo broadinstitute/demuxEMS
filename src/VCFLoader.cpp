@@ -106,6 +106,7 @@ void VCFLoader::loadVCF(const std::string& input_vcf_file) {
 
 	std::string curr_chrom = "", chrom;
 	int pos;
+	std::string ID;
 	char ref, alt;
 	std::vector<std::string> genotype_strings(nDonor, "");
 	int nmissing = 0;
@@ -126,7 +127,7 @@ void VCFLoader::loadVCF(const std::string& input_vcf_file) {
 		assert(std::getline(strin, field, '\t')); // POS
 		pos = std::stoi(field) - 1; // convert to 0-based position
 
-		assert(std::getline(strin, field, '\t')); // ID
+		assert(std::getline(strin, ID, '\t')); // ID
 
 		assert(std::getline(strin, field, '\t')); // REF
 		if (field.length() != 1 || !(field[0] == 'A' || field[0] == 'C' || field[0] == 'G' || field[0] == 'T')) continue;
@@ -166,7 +167,7 @@ void VCFLoader::loadVCF(const std::string& input_vcf_file) {
 			snp_vec = &snpMap[chrom];
 		}
 
-		snp_vec->emplace_back(pos, ref, alt);
+		snp_vec->emplace_back(pos, ID, ref, alt);
 		if (nDonor > 0)
 			for (int i = 0; i < nDonor; ++i)
 				snp_vec->back().setDonorGenotype(i, genotype_strings[i]);

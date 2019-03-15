@@ -72,9 +72,10 @@ public:
 	// 0: consume nothing; 1: query; 2: reference; 3: both
 	int optypeAt(int pos) const { return bam_cigar_type(opAt(pos)); }
 	
-	// toString will reset dir
-	std::string toString(char dir = '+') {
-		setDir(dir);
+	// toString will reset dir, default return string in the BAM file, i.e. return_current = true
+	std::string toString(char dir = 0) {
+		if (dir == 0) return_current = true;
+		else setDir(dir);
 		std::ostringstream strout;
 		for (int i = 0; i < len; ++i) strout<< oplenAt(i)<< opchrAt(i); 
 		return strout.str();

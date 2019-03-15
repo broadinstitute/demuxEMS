@@ -48,7 +48,7 @@ int DataCollector::collectData(BamAlignment& ba) {
 	SEQstring si;
 	QUALstring qi;
 
-	uint8_t *tag_p1, *tag_p2;
+	uint8_t *tag_p1, *tag_p2, *tag_p3;
 	char tag_type;
 
 	char base;
@@ -65,6 +65,9 @@ int DataCollector::collectData(BamAlignment& ba) {
 	assert(tag_type == 'Z');
 	if (!ba.findTag(umi_tag.c_str(), tag_p2, tag_type)) return 2;
 	assert(tag_type == 'Z');
+	if (!ba.findTag("GX", tag_p3, tag_type)) return 2;
+	assert(tag_type == 'Z');
+	if (ba.is_secondary()) return 2;
 
 	char *cbstr = ba.tag2Z(tag_p1);
 	if (barcode_len < 0) barcode_len = strlen(cbstr) - 2;
@@ -180,13 +183,13 @@ void DataCollector::outputDataMatrix(const std::string& output_name) {
 
 	fout.open(output_name + ".snps.tsv");
 
-	fout << "CHROM\tPOS\tREF\tALT";
+	fout << "CHROM\tPOS\tID\tREF\tALT";
 	for (auto&& name : vcf_loader.getDonorNames()) fout<< '\t'<< name;
 	fout<< std::endl;
 
 	for (auto&& snp_id : snpid_vec) {
 		vcf_loader.locate(snp_id);
-		fout<< vcf_loader.getChromName()<< '\t'<< vcf_loader.getPos() + 1<< '\t'<< vcf_loader.getRef()<< '\t'<< vcf_loader.getAlt();
+		fout<< vcf_loader.getChromName()<< '\t'<< vcf_loader.getPos() + 1<< '\t'<< vcf_loader.getID()<< '\t'<< vcf_loader.getRef()<< '\t'<< vcf_loader.getAlt();
 		for (int i = 0; i < ndonor; ++i) fout<< '\t'<< vcf_loader.getDonorGenotype(i);
 		fout<< std::endl;
 	}

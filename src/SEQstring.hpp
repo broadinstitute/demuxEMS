@@ -66,8 +66,8 @@ public:
 		return (return_current ? codes[bam_seqi(seq, pos)] : rcodes[bam_seqi(seq, len - pos - 1)]);
 	}
 
-	// toString will reset dir
-	std::string toString(char dir = '+');
+	// toString will reset dir, default return string in the BAM file, i.e. return_current = True
+	std::string toString(char dir = 0);
 
 private:
 	uint8_t *seq;

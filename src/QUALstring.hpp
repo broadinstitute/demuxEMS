@@ -63,9 +63,10 @@ public:
 		return qual[return_current ? pos : len - pos - 1];
 	}
 
-	// default is the original quality score string
-	std::string toString(char dir = '+') {
-		setDir(dir);
+	// default return string in the BAM file, i.e. return_current = true
+	std::string toString(char dir = 0) {
+		if (dir == 0) return_current = true;
+		else setDir(dir);
 		std::ostringstream strout;
 		for (int i = 0; i < len; ++i) strout<< char(qualAt(i) + 33);
 		return strout.str();
